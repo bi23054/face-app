@@ -577,55 +577,42 @@ export default function Home() {
 
   return (
     <div style={{display:"flex",height:"100vh",overflow:"hidden",background:"#edeae5",fontFamily:"'Georgia',serif"}}>
-      {/* 左：キャンバス */}
+      {/* 左：キャンバスエリア（ハイドレーションエラー完全封鎖版） */}
       <div style={{flex:"1",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 20px",background:"#f9f6f2",borderRight:"1px solid #ddd"}}>
         <div style={{fontSize:"10px",letterSpacing:"4px",color:"#aaa",textTransform:"uppercase",marginBottom:"12px"}}>Portrait Studio</div>
         <canvas ref={canvasRef} width={300} height={420} style={{borderRadius:"6px",background:"#f9f6f2",boxShadow:"0 10px 50px rgba(0,0,0,0.15)"}} />
-        <div style={{display:"flex",gap:"10px",marginTop:"20px"}}>
-          <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-  <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-  {isMounted && (
-    <>
-      <button
-        onClick={undo}
-        disabled={!prev}
-        {...({ suppressHydrationWarning: true } as any)} // エラーを強制無視
-        style={{
-          padding: "8px 22px",
-          fontSize: "11px",
-          borderRadius: "20px",
-          border: "none",
-          cursor: prev ? "pointer" : "default",
-          background: prev ? "#c8a97e" : "#2a2520",
-          color: prev ? "#18150f" : "#3a3530",
-          letterSpacing: "1.5px",
-          fontWeight: "bold"
-        }}
-      >
-        ↩ １個前に戻る
-      </button>
+        
+        {/* ボタン部分はマウント後にしか存在させないことでエラーを物理的に消す */}
+        <div style={{display:"flex",gap:"10px",marginTop:"20px", minHeight: "31px"}}>
+          {isMounted && (
+            <>
+              <button 
+                onClick={undo} 
+                disabled={!prev} 
+                style={{
+                  padding:"8px 22px",fontSize:"11px",borderRadius:"20px",border:"none",
+                  cursor:prev?"pointer":"default",
+                  background:prev?"#c8a97e":"#2a2520",
+                  color:prev?"#18150f":"#3a3530",
+                  letterSpacing:"1.5px",fontWeight:"bold"
+                }}
+              >
+                ↩ １個前に戻る
+              </button>
+              <button 
+                onClick={saveImage} 
+                style={{
+                  padding:"8px 22px",fontSize:"11px",borderRadius:"20px",border:"none",
+                  cursor:"pointer",background:"#c8a97e",color:"#18150f",
+                  letterSpacing:"1.5px",fontWeight:"bold"
+                }}
+              >
+                💾 保存
+              </button>
+            </>
+          )}
+        
       
-      <button 
-        onClick={saveImage} 
-        {...({ suppressHydrationWarning: true } as any)}
-        style={{
-          padding: "8px 22px",
-          fontSize: "11px",
-          borderRadius: "20px",
-          border: "none",
-          cursor: "pointer",
-          background: "#c8a97e",
-          color: "#18150f",
-          letterSpacing: "1.5px",
-          fontWeight: "bold"
-        }}
-      >
-        💾 保存
-      </button>
-    </>
-  )}
-</div>
-</div>
         </div>
       </div>
 
