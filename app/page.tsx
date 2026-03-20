@@ -582,24 +582,42 @@ export default function Home() {
         <div style={{fontSize:"10px",letterSpacing:"4px",color:"#aaa",textTransform:"uppercase",marginBottom:"12px"}}>Portrait Studio</div>
         <canvas ref={canvasRef} width={300} height={420} style={{borderRadius:"6px",background:"#f9f6f2",boxShadow:"0 10px 50px rgba(0,0,0,0.15)"}} />
         <div style={{display:"flex",gap:"10px",marginTop:"20px"}}>
-<button 
-  onClick={undo} 
-  disabled={!isMounted || prev === null} 
-  style={{
-    padding: "8px 22px",
-    fontSize: "11px",
-    borderRadius: "20px",
-    border: "none",
-    cursor: (isMounted && prev) ? "pointer" : "default",
-    background: (isMounted && prev) ? "#c8a97e" : "#2a2520",
-    color: (isMounted && prev) ? "#18150f" : "#3a3530",
-    letterSpacing: "1.5px",
-    fontWeight: "bold"
-  }}
->
-  ↩ １個前に戻る
-</button>
-<button onClick={saveImage} style={{padding:"8px 22px",fontSize:"11px",borderRadius:"20px",border:"none",cursor:"pointer",background:"#c8a97e",color:"#18150f",letterSpacing:"1.5px",fontWeight:"bold"}}>💾 保存する</button>
+          <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+  <button
+    onClick={undo}
+    disabled={!isMounted || !prev}
+    style={{
+      padding: "8px 22px",
+      fontSize: "11px",
+      borderRadius: "20px",
+      border: "none",
+      cursor: (isMounted && prev) ? "pointer" : "default",
+      background: (isMounted && prev) ? "#c8a97e" : "#2a2520",
+      color: (isMounted && prev) ? "#18150f" : "#3a3530",
+      letterSpacing: "1.5px",
+      fontWeight: "bold"
+    }}
+  >
+    ↩ １個前に戻る
+  </button>
+  
+  <button 
+    onClick={saveImage} 
+    style={{
+      padding: "8px 22px",
+      fontSize: "11px",
+      borderRadius: "20px",
+      border: "none",
+      cursor: "pointer",
+      background: "#c8a97e",
+      color: "#18150f",
+      letterSpacing: "1.5px",
+      fontWeight: "bold"
+    }}
+  >
+    💾 保存
+  </button>
+</div>
         </div>
       </div>
 
