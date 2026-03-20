@@ -381,7 +381,11 @@ export default function Home() {
   const [st, setSt] = useState<FaceState>(DEFAULT_STATE);
   const [prev, setPrev] = useState<FaceState|null>(null);
   const [isMounted, setIsMounted] = useState(false);
+
   useEffect(()=>{setIsMounted(true);},[]);
+  if (!isMounted) {
+    return <div style={{ background: "#0d0b09", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#c8a97e" }}>Loading Studio...</div>;
+  }
   const s=st;
   const set=<K extends keyof FaceState>(k:K,v:FaceState[K])=>{setPrev(st);setSt(s=>({...s,[k]:v}));};
   const undo=()=>{if(prev){setSt(prev);setPrev(null);}};
