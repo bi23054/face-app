@@ -330,7 +330,7 @@ function drawMouth(ctx:CanvasRenderingContext2D, cx:number, my:number, mw:number
   ctx.fillStyle=lhG; ctx.beginPath(); ctx.ellipse(cx,my+lH*0.44,MW*0.35,lH*0.32,0,0,Math.PI*2); ctx.fill();
   ctx.restore();
   ctx.strokeStyle=rga(lCD,0.6); ctx.lineWidth=0.92; ctx.lineCap="round";
-  ctx.beginPath(); ctx.moveTo(cx-MW,my+1.8+cY); ctx.bezierCurveTo(cx-MW*0.24,my-0.4,cx+MW*0.24,my-0.4,cx+MW,my+1.8+cY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-MW,my+1.8+cY); ctx.bezierCurveTo(cx-MW*0.24,my-0.4, cx + MW*0.24,my-0.4,cx+MW,my+1.8+cY); ctx.stroke();
   ctx.strokeStyle=rga(lCD,0.33); ctx.lineWidth=0.6; ctx.beginPath(); upper(false); ctx.stroke();
   for (const s of [-1,1] as const) {
     const cG=ctx.createRadialGradient(cx+s*(MW-1),my+1.8+cY,0.5,cx+s*(MW-1),my+1.8+cY,4.2);
@@ -339,7 +339,6 @@ function drawMouth(ctx:CanvasRenderingContext2D, cx:number, my:number, mw:number
   }
 }
 
-// ─── State型 ─────────────────────────────────────────────
 type FaceState = {
   faceW:number; faceH:number; foreheadH:number; eraW:number; chinLen:number; chinW:number;
   eyeW:number; eyeH:number; irisColor:string; irisR:number; pupilR:number;
@@ -381,11 +380,7 @@ export default function Home() {
   const [st, setSt] = useState<FaceState>(DEFAULT_STATE);
   const [prev, setPrev] = useState<FaceState|null>(null);
   const [isMounted, setIsMounted] = useState(false);
-
   useEffect(()=>{setIsMounted(true);},[]);
-  if (!isMounted) {
-    return <div style={{ background: "#0d0b09", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#c8a97e" }}>Loading Studio...</div>;
-  }
   const s=st;
   const set=<K extends keyof FaceState>(k:K,v:FaceState[K])=>{setPrev(st);setSt(s=>({...s,[k]:v}));};
   const undo=()=>{if(prev){setSt(prev);setPrev(null);}};
@@ -396,7 +391,7 @@ export default function Home() {
     const link = document.createElement("a");
     link.href = dataUrl;
     link.download = "portrait.png";
-    document.body.appendChild(link); 
+    document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
@@ -416,13 +411,11 @@ export default function Home() {
 
     drawHairBack(ctx,cx,ty,fw,st.hairBack,st.hairVol,st.hairMain);
 
-    // 顔ベース
     const faceMidY=ty+(fH+mH+cH)*0.5;
     const g=ctx.createRadialGradient(cx,faceMidY,4,cx,faceMidY,fw*1.5);
     g.addColorStop(0,sk.hi); g.addColorStop(0.28,sk.base); g.addColorStop(0.70,sk.mid); g.addColorStop(1,sk.dark);
     ctx.fillStyle=g; ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.fill();
 
-    // チーク（範囲・X移動・Y移動）
     const cColor=hr(st.cheekColor);
     ctx.save(); ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.clip();
     for (const sv of [-1,1] as const) {
@@ -445,14 +438,12 @@ export default function Home() {
     const noseY_abs=midStart+mH*0.82;
     const mouthY_abs=midEnd+st.mouthVert;
 
-    // アイシャドウ
     const sColor=hr(st.eyeShadowColor);
     for (const xs of [-1,1] as const) {
       const ex=cx+xs*40+xs*st.eyeDist, ew=13.5*st.eyeW, eh=5.8*st.eyeH;
       ctx.save(); ctx.beginPath(); ctx.rect(ex-ew*1.5,eyeY_abs-eh*5,ew*3,eh*5); ctx.clip();
-      // 横幅（目尻方向）と縦幅（瞼上方向）を独立制御
-      const shadowW=ew*st.eyeShadowW;   // 楕円の横半径
-      const shadowH=4+st.eyeShadowH*14; // 楕円の縦半径（上方向）
+      const shadowW=ew*st.eyeShadowW;
+      const shadowH=4+st.eyeShadowH*14;
       const centerY=eyeY_abs-shadowH*0.35;
       const esG=ctx.createRadialGradient(ex,centerY,0,ex,centerY,Math.max(shadowW,shadowH));
       esG.addColorStop(0,rga(sColor,0.42)); esG.addColorStop(1,rga(sColor,0));
@@ -463,7 +454,6 @@ export default function Home() {
     drawEyebrow(ctx,lbx,-1,browBaseY,st.browW,st.browAngle,st.browT,st.browDens,st.browShape,st.browColor);
     drawEyebrow(ctx,rbx, 1,browBaseY,st.browW,st.browAngle,st.browT,st.browDens,st.browShape,st.browColor);
 
-    // 目
     for (const sv of [-1,1] as const) {
       const ex=cx+sv*40+sv*st.eyeDist, ew=13.5*st.eyeW, eh=5.8*st.eyeH;
       const innerY=sv===-1?-st.headAng:-st.tailAng;
@@ -493,14 +483,11 @@ export default function Home() {
       ctx.fillStyle="rgba(255,255,255,0.42)"; ctx.beginPath(); ctx.ellipse(ex+st.irisR*0.22,eyeY_abs+st.irisR*0.19,st.irisR*0.1,st.irisR*0.08,0.3,0,Math.PI*2); ctx.fill();
       ctx.restore();
 
-      // 上まぶた線
       ctx.strokeStyle="rgba(14,6,3,0.88)"; ctx.lineWidth=1.7; ctx.lineCap="round";
       ctx.beginPath(); ctx.moveTo(ex-ew,eyeY_abs+innerY*0.5); ctx.bezierCurveTo(ex-ew*0.42,eyeY_abs-eh*1.12,ex+ew*0.3,eyeY_abs-eh*1.26,ex+ew,eyeY_abs+outerY*0.5); ctx.stroke();
-      // 下まぶた線
       ctx.strokeStyle="rgba(14,6,3,0.22)"; ctx.lineWidth=0.62;
       ctx.beginPath(); ctx.moveTo(ex+ew,eyeY_abs+outerY*0.5); ctx.bezierCurveTo(ex+ew*0.38,eyeY_abs+eh*0.76,ex-ew*0.18,eyeY_abs+eh*0.76,ex-ew,eyeY_abs+innerY*0.5); ctx.stroke();
 
-      // 二重
       if (st.dblType>0&&st.dblDepth>0) {
         const alpha=0.18+st.dblDepth*0.45;
         ctx.strokeStyle=`rgba(28,10,4,${alpha})`; ctx.lineWidth=0.8+st.dblDepth*0.45; ctx.lineCap="round";
@@ -515,15 +502,12 @@ export default function Home() {
         ctx.stroke();
       }
 
-      // 涙袋（濃さはtearBagAlphaで独立制御）
       if (st.tearBag>0&&st.tearBagSize>0) {
-        // カラー塗り（skinの場合はスキップ）
         if (st.tearBagColor !== "skin") {
           const tbC = hr(st.tearBagColor);
           const tbFillH = st.tearBagSize * 2.2;
           const tbY = eyeY_abs + eh * 0.76 + st.tearBagSize * 0.5;
           ctx.save();
-          // 下まぶたラインの下エリアをクリップ
           ctx.beginPath();
           ctx.moveTo(ex+ew, eyeY_abs+outerY*0.5);
           ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76, ex-ew*0.18, eyeY_abs+eh*0.76, ex-ew, eyeY_abs+innerY*0.5);
@@ -537,7 +521,6 @@ export default function Home() {
           ctx.fillRect(ex-ew-1, eyeY_abs+outerY*0.5, ew*2+2, st.tearBagSize+tbFillH+eh);
           ctx.restore();
         }
-        // 影線
         ctx.strokeStyle=`rgba(28,10,4,${st.tearBagAlpha})`;
         ctx.lineWidth=0.6+st.tearBagAlpha*0.8; ctx.lineCap="round";
         ctx.beginPath();
@@ -546,7 +529,6 @@ export default function Home() {
         ctx.stroke();
       }
 
-      // まつ毛
       const lashN=14;
       for (let i=0;i<lashN;i++) {
         const rawT=i/(lashN-1), zoneT=sv===-1?rawT:1-rawT;
@@ -570,7 +552,6 @@ export default function Home() {
     drawMouth(ctx,cx,mouthY_abs,st.mouthW,st.upperLipT,st.lowerLipT,st.cornerLift,st.lipColor);
     drawBangs(ctx,cx,ty,fw,st.hairVol,st.hairBang,st.hairMain);
 
-    // おでこ・頬ハイライト
     const lightColor=mix("#ffffff",sk.base,skinT*0.5);
     ctx.save(); ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.clip();
     const foreheadG=ctx.createRadialGradient(cx,ty-fH*0.3,5,cx,ty-fH*0.3,fw*0.8);
@@ -581,18 +562,17 @@ export default function Home() {
 
   return (
     <div style={{display:"flex",height:"100vh",overflow:"hidden",background:"#edeae5",fontFamily:"'Georgia',serif"}}>
-      {/* 左：キャンバスエリア（ハイドレーションエラー完全封鎖版） */}
       <div style={{flex:"1",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 20px",background:"#f9f6f2",borderRight:"1px solid #ddd"}}>
         <div style={{fontSize:"10px",letterSpacing:"4px",color:"#aaa",textTransform:"uppercase",marginBottom:"12px"}}>Portrait Studio</div>
         <canvas ref={canvasRef} width={300} height={420} style={{borderRadius:"6px",background:"#f9f6f2",boxShadow:"0 10px 50px rgba(0,0,0,0.15)"}} />
-        
-        {/* ボタン部分はマウント後にしか存在させないことでエラーを物理的に消す */}
-        <div style={{display:"flex",gap:"10px",marginTop:"20px", minHeight: "31px"}}>
+
+        {/* ── ここだけ修正：isMounted後にのみレンダリングしてSSR/CSRのmismatchを防ぐ ── */}
+        <div style={{display:"flex",gap:"10px",marginTop:"20px",minHeight:"37px"}}>
           {isMounted && (
             <>
-              <button 
-                onClick={undo} 
-                disabled={!prev} 
+              <button
+                onClick={undo}
+                disabled={!prev}
                 style={{
                   padding:"8px 22px",fontSize:"11px",borderRadius:"20px",border:"none",
                   cursor:prev?"pointer":"default",
@@ -603,8 +583,8 @@ export default function Home() {
               >
                 ↩ １個前に戻る
               </button>
-              <button 
-                onClick={saveImage} 
+              <button
+                onClick={saveImage}
                 style={{
                   padding:"8px 22px",fontSize:"11px",borderRadius:"20px",border:"none",
                   cursor:"pointer",background:"#c8a97e",color:"#18150f",
@@ -615,12 +595,9 @@ export default function Home() {
               </button>
             </>
           )}
-        
-      
         </div>
       </div>
 
-      {/* 右：コントロール */}
       <div style={{flex:"1.2",background:"#0d0b09",color:"#e2d9cc",padding:"24px 20px",overflowY:"auto",height:"100%"}}>
         <div style={{marginBottom:"20px",paddingLeft:"12px"}}>
           <h2 style={{fontSize:"14px",letterSpacing:"6px",color:"#c8a97e",margin:0}}>DESIGNER</h2>
@@ -721,9 +698,9 @@ export default function Home() {
             <Sld label="肌色" v={s.skinT}  mn={0}   mx={1}   st={0.01} fn={v=>set("skinT",v)} leftLabel="白" rightLabel="暗" />
             <Sld label="陰影" v={s.shadow} mn={0.1} mx={1.0} st={0.05} fn={v=>set("shadow",v)} />
             <Sep />
-            <Sld label="チーク範囲" v={s.cheekSize} mn={0.1} mx={2.0} st={0.05} fn={v=>set("cheekSize",v)} />
-            <Sld label="チーク横移動" v={s.cheekX} mn={-30} mx={30} st={1} fn={v=>set("cheekX",v)} />
-            <Sld label="チーク縦移動" v={s.cheekY} mn={-30} mx={30} st={1} fn={v=>set("cheekY",v)} />
+            <Sld label="チーク範囲"  v={s.cheekSize} mn={0.1} mx={2.0} st={0.05} fn={v=>set("cheekSize",v)} />
+            <Sld label="チーク横移動" v={s.cheekX}    mn={-30} mx={30}  st={1}    fn={v=>set("cheekX",v)} />
+            <Sld label="チーク縦移動" v={s.cheekY}    mn={-30} mx={30}  st={1}    fn={v=>set("cheekY",v)} />
             <ColorSwatch label="チーク色" v={s.cheekColor} fn={v=>set("cheekColor",v)} list={CHEEK_COLORS} />
           </Sec>
 
@@ -733,7 +710,6 @@ export default function Home() {
   );
 }
 
-// ─── カラーパレット ──────────────────────────────────────
 const HAIR_COLORS = [
   "#060402","#0e0804","#160c04","#1e1006","#2c1608","#3c1e0c",
   "#3c3028","#102040","#102818","#301848","#502810","#643218",
@@ -789,8 +765,6 @@ const TEARBAG_COLORS = [
   "#c8e0f8","#a8c8f0","#88b0e8",
 ];
 
-
-// ─── UIパーツ ─────────────────────────────────────────────
 function Sec({title,children}:{title:string;children:React.ReactNode}) {
   return (
     <div style={{background:"#1a1714",borderRadius:"6px",padding:"10px 12px",border:"1px solid #252018"}}>
@@ -843,13 +817,11 @@ function ColorSwatch({label,v,list,fn}:{label:string;v:string;list:string[];fn:(
     </div>
   );
 }
-
 function TearBagColorSwatch({label,v,fn}:{label:string;v:string;fn:(s:string)=>void}) {
   return (
     <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
       <div style={{width:"78px",fontSize:"10px",color:"#9e9286",flexShrink:0}}>{label}</div>
       <div style={{display:"flex",gap:"3px",flexWrap:"wrap",maxWidth:"220px"}}>
-        {/* スキン（色なし） */}
         <div onClick={()=>fn("skin")} title="スキン（なし）"
           style={{width:"15px",height:"15px",borderRadius:"50%",cursor:"pointer",
             border:`2px solid ${v==="skin"?"#c8a97e":"#3a3530"}`,boxSizing:"border-box",flexShrink:0,
