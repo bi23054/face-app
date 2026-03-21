@@ -974,8 +974,8 @@ const MAKEUP_COLORS = [
   "#b06080","#e080b0","#f0c0e0","#8040a0","#60208a",
 ];
 const CHEEK_COLORS = [
-  "#f0a0a0","#e08870","#d07090","#c05858","#a06040","#f8c0c0",
-  "#ffd0e8","#e8a0c0","#d080a0","#f0d0b0","#e0b090",
+  "#f0a0a0","#e08870","#d07090","#c05858","#c03868","#a06040",
+  "#f8c0c0","#ffd0e8","#e8a0c0","#d080a0","#f0d0b0","#e0b090",
 ];
 const TEARBAG_COLORS = [
   "skin",
