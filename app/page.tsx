@@ -99,327 +99,444 @@ function drawEars(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
 }
 
 function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, fH:number, mH:number, cH:number, eraW:number, style:number, vol:number, mainColor:string) {
+  // ── 顔パラメータから導出した基準点 ──────────────────────
+  // ty = 顔の一番上（額）
+  // ty+fH = 額と頬の境目（eraが始まる位置）
+  // ty+fH+mH = 頬の底（顎の始まり）
+  // ty+fH+mH+cH = 顎の底（顔の最下点）
   const era = Math.max(-0.5, Math.min(0.4, eraW));
-  const foreheadX = fw * 0.92;
-  const eraX = fw * (0.92 + era);
-  
-  const hy = ty - (fH * 0.15); 
-  const sr = eraX * vol * 1.05;
+  const foreheadX = fw*0.92;           // 額の横幅
+  const eraX = fw*(0.92+era);          // 頬最大横幅
+  const faceBottom = ty+fH+mH+cH;      // 顎の底
+  const earY = ty+fH+mH*0.4;           // 耳の高さ（drawEarsと同じ計算）
+  const earX = foreheadX*(1-0.4)+eraX*0.4; // 耳のX位置
 
-  const hc = hr(mainColor);
-  const hcD = drk(hc, 38);
+  // 頭頂部は顔幅・頬幅に連動
+  const hy = ty - fw*0.28;             // 頭頂部（顔幅に連動）
+  const sr = eraX * vol * 1.02;        // 横方向の広がり = 顔幅基準
 
-  const head = () => {
-    ctx.beginPath(); 
-    ctx.moveTo(cx, hy - 8);
-    ctx.bezierCurveTo(cx - sr * 0.38, hy - 10, cx - sr * 0.86, hy + 9, cx - sr * 0.93, ty + 26);
-    ctx.bezierCurveTo(cx - sr * 0.97, ty + 50, cx - sr * 0.95, ty + 70, cx - sr * 0.84, ty + 92);
-    ctx.bezierCurveTo(cx - sr * 0.58, ty + 104, cx - sr * 0.26, ty + 110, cx, ty + 110);
-    ctx.bezierCurveTo(cx + sr * 0.26, ty + 110, cx + sr * 0.58, ty + 104, cx + sr * 0.84, ty + 92);
-    ctx.bezierCurveTo(cx + sr * 0.95, ty + 70, cx + sr * 0.97, ty + 50, cx + sr * 0.93, ty + 26);
-    ctx.bezierCurveTo(cx + sr * 0.86, hy + 9, cx + sr * 0.38, hy - 10, cx, hy - 8);
+  const hc=hr(mainColor);
+  const hcDD=drk(hc,55), hcD=drk(hc,32), hcM=drk(hc,14), hcL=lit(hc,20);
+
+  const fillH=(path:()=>void)=>{
+    const g=ctx.createLinearGradient(cx-sr,hy,cx+sr,hy);
+    g.addColorStop(0,rga(hcDD)); g.addColorStop(0.18,rga(hcD));
+    g.addColorStop(0.50,rga(hcL)); g.addColorStop(0.82,rga(hcD)); g.addColorStop(1,rga(hcDD));
+    ctx.save(); path(); ctx.fillStyle=g; ctx.fill(); ctx.restore();
+  };
+  const fillV=(path:()=>void,y0:number,y1:number)=>{
+    const g=ctx.createLinearGradient(cx,y0,cx,y1);
+    g.addColorStop(0,rga(hcD)); g.addColorStop(0.4,rga(hcL)); g.addColorStop(1,rga(hcDD));
+    ctx.save(); path(); ctx.fillStyle=g; ctx.fill(); ctx.restore();
+  };
+  const strands=(list:[number,number,number,number,number,number,number,number,number][])=>{
+    ctx.save(); ctx.lineCap="round";
+    list.forEach(([sx,sy,c1x,c1y,c2x,c2y,ex,ey,lw])=>{
+      ctx.strokeStyle=rga(hcD,0.18); ctx.lineWidth=lw;
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.bezierCurveTo(c1x,c1y,c2x,c2y,ex,ey); ctx.stroke();
+    });
+    ctx.restore();
+  };
+  const crown=(x:number,y:number,rx:number,ry:number)=>{
+    ctx.save();
+    const g=ctx.createRadialGradient(x-rx*0.1,y,1,x,y,rx);
+    g.addColorStop(0,"rgba(255,255,255,0.18)"); g.addColorStop(0.5,"rgba(255,255,255,0.06)"); g.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  };
+
+  // 頭部シルエット：額幅・頬幅・耳位置に完全連動
+  const headPath=()=>()=>{
+    ctx.beginPath(); ctx.moveTo(cx,hy);
+    ctx.bezierCurveTo(cx-foreheadX*0.42,hy, cx-foreheadX*0.95,hy+fH*0.45, cx-foreheadX,ty+fH);
+    ctx.bezierCurveTo(cx-foreheadX,ty+fH+mH*0.35, cx-eraX,ty+fH+mH*0.55, cx-eraX,ty+fH+mH);
+    ctx.bezierCurveTo(cx-eraX,ty+fH+mH+cH*0.3, cx-fw*0.15,faceBottom, cx,faceBottom);
+    ctx.bezierCurveTo(cx+fw*0.15,faceBottom, cx+eraX,ty+fH+mH+cH*0.3, cx+eraX,ty+fH+mH);
+    ctx.bezierCurveTo(cx+eraX,ty+fH+mH*0.55, cx+foreheadX,ty+fH+mH*0.35, cx+foreheadX,ty+fH);
+    ctx.bezierCurveTo(cx+foreheadX*0.95,hy+fH*0.45, cx+foreheadX*0.42,hy, cx,hy);
     ctx.closePath();
   };
 
-  const headStrands = (endY: number) => {
-    const pairs: [number, number, number][] = [
-      [cx - sr * 0.22, cx - sr * 0.30, -6],
-      [cx, cx + sr * 0.05, 3],
-      [cx + sr * 0.22, cx + sr * 0.30, 6],
-      [cx - sr * 0.54, cx - sr * 0.78, -4],
-      [cx + sr * 0.54, cx + sr * 0.78, 4]
-    ];
-    pairs.forEach(([sx, ex, b], i) => strand(sx, hy + 12 + (i % 2) * 8, ex, endY, b, 0.18 + (i % 3) * 0.04, 0.5 + (i % 2) * 0.3));
+  // 頭部ストランド（earY〜頭頂まで）
+  const headStrands=(endY:number)=>{
+    strands([
+      [cx-foreheadX*0.22,hy+6,cx-foreheadX*0.26,ty+fH*0.5,cx-foreheadX*0.38,ty+fH*0.9,cx-foreheadX*0.46,endY,0.7],
+      [cx,hy+4,cx+foreheadX*0.02,ty+fH*0.45,cx+foreheadX*0.04,ty+fH*0.85,cx+foreheadX*0.06,endY,0.8],
+      [cx+foreheadX*0.22,hy+6,cx+foreheadX*0.26,ty+fH*0.5,cx+foreheadX*0.38,ty+fH*0.9,cx+foreheadX*0.46,endY,0.7],
+      [cx-foreheadX*0.60,hy+12,cx-foreheadX*0.70,ty+fH*0.55,cx-eraX*0.88,ty+fH+mH*0.35,cx-eraX*0.96,Math.min(endY,earY),0.6],
+      [cx+foreheadX*0.60,hy+12,cx+foreheadX*0.70,ty+fH*0.55,cx+eraX*0.88,ty+fH+mH*0.35,cx+eraX*0.96,Math.min(endY,earY),0.6],
+    ]);
   };
 
-  // --- グラデーション塗り用の関数 ---
-  const fillHair = (x0: number, y0: number, x1: number, y1: number) => {
-    const g = ctx.createLinearGradient(x0, y0, x1, y1);
-    const hcDD = drk(hc, 65), hcM = drk(hc, 20), hcL = lit(hc, 18);
-    g.addColorStop(0, rga(hcDD)); g.addColorStop(0.18, rga(hcD)); g.addColorStop(0.42, rga(hcM));
-    g.addColorStop(0.65, rga(hcL)); g.addColorStop(0.82, rga(hcM)); g.addColorStop(1, rga(hcDD));
-    ctx.fillStyle = g; ctx.fill();
+  // 長髪シルエット（耳より下を外に広げる）
+  const longSide=(s:number,bottomY:number,maxX:number)=>{
+    return ()=>{
+      ctx.beginPath(); ctx.moveTo(cx+s*foreheadX,ty+fH);
+      ctx.bezierCurveTo(cx+s*foreheadX,ty+fH+mH*0.4, cx+s*eraX,ty+fH+mH*0.6, cx+s*eraX,ty+fH+mH);
+      ctx.bezierCurveTo(cx+s*eraX,ty+fH+mH+cH*0.5, cx+s*maxX,earY+mH*0.3, cx+s*maxX,bottomY-20);
+      ctx.bezierCurveTo(cx+s*maxX*0.95,bottomY-5, cx+s*maxX*0.82,bottomY, cx+s*maxX*0.60,bottomY);
+      ctx.bezierCurveTo(cx+s*maxX*0.32,bottomY, cx+s*maxX*0.06,bottomY, cx+s*maxX*0.04,bottomY-2);
+      ctx.lineTo(cx,bottomY);
+      ctx.closePath();
+    };
   };
-
-  // --- 天使の輪 ---
-  const shine = (hx: number, hy2: number, rx: number, ry: number) => {
-    const g = ctx.createRadialGradient(hx - rx * 0.1, hy2, 1, hx, hy2 + ry * 0.1, rx);
-    g.addColorStop(0, "rgba(255,255,255,0.20)"); g.addColorStop(0.45, "rgba(255,255,255,0.07)"); g.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(hx, hy2, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
-  };
-
-  // --- スタイル別の分岐 ---
-  if (style === 0) {
-    ctx.beginPath(); ctx.moveTo(cx, hy - 4);
-    ctx.bezierCurveTo(cx - sr * 0.36, hy - 6, cx - sr * 0.82, hy + 10, cx - sr * 0.88, ty + 18);
-    ctx.bezierCurveTo(cx - sr * 0.90, ty + 36, cx - sr * 0.86, ty + 52, cx - sr * 0.76, ty + 64);
-    ctx.bezierCurveTo(cx - sr * 0.54, ty + 74, cx - sr * 0.22, ty + 78, cx, ty + 78);
-    ctx.bezierCurveTo(cx + sr * 0.22, ty + 78, cx + sr * 0.54, ty + 74, cx + sr * 0.76, ty + 64);
-    ctx.bezierCurveTo(cx + sr * 0.86, ty + 52, cx + sr * 0.90, ty + 36, cx + sr * 0.88, ty + 18);
-    ctx.bezierCurveTo(cx + sr * 0.82, hy + 10, cx + sr * 0.36, hy - 6, cx, hy - 4);
-    ctx.closePath(); fillHair(cx, hy, cx, ty + 78);
-    [[cx - sr * 0.2, cx - sr * 0.38, -3], [cx, cx, 2], [cx + sr * 0.2, cx + sr * 0.38, 3]].forEach(([sx, ex, b], i) => strand(sx, hy + 10, ex, ty + 68, b, 0.22, 0.6));
-    shine(cx - sr * 0.08, hy + 16, sr * 0.28, 11);
-  } else if (style === 1) {
-    head(); fillHair(cx, hy, cx, ty + 110); headStrands(ty + 100); shine(cx - sr * 0.1, hy + 20, sr * 0.36, 14);
-  } else if (style === 2) {
-    const bY = ty + 158; head(); fillHair(cx, hy, cx, bY + 8);
-    [[cx - sr * 0.2, cx - sr * 0.32, bY, -10], [cx, cx + sr * 0.04, bY + 5, 4], [cx + sr * 0.2, cx + sr * 0.32, bY, 10]].forEach(([sx, ex, ey, b], i) => strand(sx, hy + 14, ex, ey, b, 0.20, 0.55));
-    shine(cx - sr * 0.1, hy + 22, sr * 0.38, 16);
-  } else {
-    head(); fillHair(cx, hy, cx, ty + 110); headStrands(ty + 100); shine(cx - sr * 0.1, hy + 20, sr * 0.36, 14);
-  }
-
-  const strand = (sx:number, sy:number, ex:number, ey:number, bend:number, a:number, lw:number) => { ctx.save(); ctx.lineCap="round"; ctx.strokeStyle=rga(hcD,a); ctx.lineWidth=lw; ctx.beginPath(); ctx.moveTo(sx,sy); ctx.bezierCurveTo(sx+bend*0.4,sy+(ey-sy)*0.3, ex+bend*0.6,sy+(ey-sy)*0.7, ex,ey); ctx.stroke(); ctx.restore(); };
 
   if (style===0) {
-    // ベリーショート
-    ctx.beginPath(); ctx.moveTo(cx,hy-4);
-    ctx.bezierCurveTo(cx-sr*0.36,hy-6, cx-sr*0.82,hy+10, cx-sr*0.88,ty+18);
-    ctx.bezierCurveTo(cx-sr*0.90,ty+36, cx-sr*0.86,ty+52, cx-sr*0.76,ty+64);
-    ctx.bezierCurveTo(cx-sr*0.54,ty+74, cx-sr*0.22,ty+78, cx,ty+78);
-    ctx.bezierCurveTo(cx+sr*0.22,ty+78, cx+sr*0.54,ty+74, cx+sr*0.76,ty+64);
-    ctx.bezierCurveTo(cx+sr*0.86,ty+52, cx+sr*0.90,ty+36, cx+sr*0.88,ty+18);
-    ctx.bezierCurveTo(cx+sr*0.82,hy+10, cx+sr*0.36,hy-6, cx,hy-4);
-    ctx.closePath(); fillHair(cx,hy,cx,ty+78);
-    [[cx-sr*0.2,cx-sr*0.38,-3],[cx,cx,2],[cx+sr*0.2,cx+sr*0.38,3],[cx-sr*0.5,cx-sr*0.68,-2],[cx+sr*0.5,cx+sr*0.68,2]].forEach(([sx,ex,b],i)=>strand(sx,hy+10,ex,ty+68,b,0.22,0.6));
-    shine(cx-sr*0.08,hy+16,sr*0.28,11);
+    // 坊主
+    fillH(()=>{
+      ctx.beginPath(); ctx.moveTo(cx,hy+2);
+      ctx.bezierCurveTo(cx-foreheadX*0.40,hy, cx-foreheadX*0.90,hy+fH*0.38, cx-foreheadX*0.94,ty+fH*0.72);
+      ctx.bezierCurveTo(cx-foreheadX*0.96,ty+fH*0.92, cx-foreheadX*0.90,ty+fH*1.15, cx-foreheadX*0.78,ty+fH*1.32);
+      ctx.bezierCurveTo(cx-foreheadX*0.56,ty+fH*1.45, cx-foreheadX*0.22,ty+fH*1.52, cx,ty+fH*1.52);
+      ctx.bezierCurveTo(cx+foreheadX*0.22,ty+fH*1.52, cx+foreheadX*0.56,ty+fH*1.45, cx+foreheadX*0.78,ty+fH*1.32);
+      ctx.bezierCurveTo(cx+foreheadX*0.90,ty+fH*1.15, cx+foreheadX*0.96,ty+fH*0.92, cx+foreheadX*0.94,ty+fH*0.72);
+      ctx.bezierCurveTo(cx+foreheadX*0.90,hy+fH*0.38, cx+foreheadX*0.40,hy, cx,hy+2);
+      ctx.closePath();
+    });
+    crown(cx,hy+fH*0.18,foreheadX*0.26,fH*0.12);
 
   } else if (style===1) {
-    // ショート
-    head(); fillHair(cx,hy,cx,ty+110);
-    headStrands(ty+100);
-    shine(cx-sr*0.1,hy+20,sr*0.36,14);
+    // ベリーショート
+    fillH(()=>{
+      ctx.beginPath(); ctx.moveTo(cx,hy);
+      ctx.bezierCurveTo(cx-foreheadX*0.40,hy-2, cx-foreheadX*0.90,hy+fH*0.30, cx-foreheadX*0.95,ty+fH*0.62);
+      ctx.bezierCurveTo(cx-foreheadX*0.96,ty+fH*0.85, cx-foreheadX*0.92,ty+fH*1.08, cx-foreheadX*0.80,ty+fH*1.25);
+      ctx.bezierCurveTo(cx-foreheadX*0.58,ty+fH*1.38, cx-foreheadX*0.24,ty+fH*1.45, cx,ty+fH*1.45);
+      ctx.bezierCurveTo(cx+foreheadX*0.24,ty+fH*1.45, cx+foreheadX*0.58,ty+fH*1.38, cx+foreheadX*0.80,ty+fH*1.25);
+      ctx.bezierCurveTo(cx+foreheadX*0.92,ty+fH*1.08, cx+foreheadX*0.96,ty+fH*0.85, cx+foreheadX*0.95,ty+fH*0.62);
+      ctx.bezierCurveTo(cx+foreheadX*0.90,hy+fH*0.30, cx+foreheadX*0.40,hy-2, cx,hy);
+      ctx.closePath();
+    });
+    strands([
+      [cx-foreheadX*0.22,hy+6,cx-foreheadX*0.30,ty+fH*0.5,cx-foreheadX*0.42,ty+fH,cx-foreheadX*0.48,ty+fH*1.38,0.6],
+      [cx,hy+4,cx+foreheadX*0.02,ty+fH*0.48,cx+foreheadX*0.03,ty+fH*0.95,cx+foreheadX*0.04,ty+fH*1.40,0.7],
+      [cx+foreheadX*0.22,hy+6,cx+foreheadX*0.30,ty+fH*0.5,cx+foreheadX*0.42,ty+fH,cx+foreheadX*0.48,ty+fH*1.38,0.6],
+    ]);
+    crown(cx,hy+fH*0.16,foreheadX*0.28,fH*0.13);
 
   } else if (style===2) {
-    // ボブ
-    const bY=ty+158;
-    ctx.beginPath(); ctx.moveTo(cx,hy-8);
-    ctx.bezierCurveTo(cx-sr*0.38,hy-10, cx-sr*0.88,hy+8, cx-sr*0.95,ty+28);
-    ctx.bezierCurveTo(cx-sr*1.02,ty+62, cx-sr*1.06,ty+98, cx-sr*1.04,ty+122);
-    ctx.bezierCurveTo(cx-sr*1.01,ty+140, cx-sr*0.88,ty+152, cx-sr*0.60,bY);
-    ctx.bezierCurveTo(cx-sr*0.28,bY+7, cx,bY+8, cx,bY+8);
-    ctx.bezierCurveTo(cx,bY+8, cx+sr*0.28,bY+7, cx+sr*0.60,bY);
-    ctx.bezierCurveTo(cx+sr*0.88,ty+152, cx+sr*1.01,ty+140, cx+sr*1.04,ty+122);
-    ctx.bezierCurveTo(cx+sr*1.06,ty+98, cx+sr*1.02,ty+62, cx+sr*0.95,ty+28);
-    ctx.bezierCurveTo(cx+sr*0.88,hy+8, cx+sr*0.38,hy-10, cx,hy-8);
-    ctx.closePath(); fillHair(cx,hy,cx,bY+8);
-    [[cx-sr*0.20,cx-sr*0.32,bY,-10],[cx,cx+sr*0.04,bY+5,4],[cx+sr*0.20,cx+sr*0.32,bY,10],[cx-sr*0.55,cx-sr*0.90,ty+142,-7],[cx+sr*0.55,cx+sr*0.90,ty+142,7],[cx-sr*0.80,cx-sr*1.00,ty+118,-4],[cx+sr*0.80,cx+sr*1.00,ty+118,4]].forEach(([sx,ex,ey,b],i)=>strand(sx,hy+14,ex,ey,b,0.20,0.55+i%2*0.25));
-    shine(cx-sr*0.1,hy+22,sr*0.38,16);
+    // ショート
+    fillH(headPath());
+    headStrands(earY+mH*0.08);
+    crown(cx,hy+fH*0.20,foreheadX*0.36,fH*0.15);
 
   } else if (style===3) {
-    // セミロング
-    const sY=ty+225;
-    ctx.beginPath(); ctx.moveTo(cx,hy-8);
-    ctx.bezierCurveTo(cx-sr*0.38,hy-10, cx-sr*0.88,hy+8, cx-sr*0.95,ty+28);
-    ctx.bezierCurveTo(cx-sr*1.02,ty+68, cx-sr*1.08,ty+115, cx-sr*1.10,ty+158);
-    ctx.bezierCurveTo(cx-sr*1.08,ty+195, cx-sr*0.96,sY-15, cx-sr*0.70,sY);
-    ctx.bezierCurveTo(cx-sr*0.38,sY+8, cx,sY+10, cx,sY+10);
-    ctx.bezierCurveTo(cx,sY+10, cx+sr*0.38,sY+8, cx+sr*0.70,sY);
-    ctx.bezierCurveTo(cx+sr*0.96,sY-15, cx+sr*1.08,ty+195, cx+sr*1.10,ty+158);
-    ctx.bezierCurveTo(cx+sr*1.08,ty+115, cx+sr*1.02,ty+68, cx+sr*0.95,ty+28);
-    ctx.bezierCurveTo(cx+sr*0.88,hy+8, cx+sr*0.38,hy-10, cx,hy-8);
-    ctx.closePath(); fillHair(cx,hy,cx,sY+10);
-    [[cx-sr*0.18,cx-sr*0.28,sY,-15],[cx,cx+sr*0.08,sY+8,5],[cx+sr*0.18,cx+sr*0.28,sY,15],[cx-sr*0.52,cx-sr*0.92,ty+205,-10],[cx+sr*0.52,cx+sr*0.92,ty+205,10],[cx-sr*0.82,cx-sr*1.05,ty+162,-6],[cx+sr*0.82,cx+sr*1.05,ty+162,6]].forEach(([sx,ex,ey,b],i)=>strand(sx,hy+14,ex,ey,b,0.19,0.55+i%2*0.25));
-    shine(cx-sr*0.1,hy+22,sr*0.40,17);
+    // ボブ（耳下まで）
+    const bY=earY+mH*0.62;
+    fillH(()=>{
+      ctx.beginPath(); ctx.moveTo(cx,hy);
+      ctx.bezierCurveTo(cx-foreheadX*0.40,hy, cx-foreheadX*0.95,hy+fH*0.40, cx-foreheadX,ty+fH);
+      ctx.bezierCurveTo(cx-foreheadX,ty+fH+mH*0.38, cx-eraX*1.06,ty+fH+mH*0.58, cx-eraX*1.06,earY);
+      ctx.bezierCurveTo(cx-eraX*1.06,earY+mH*0.28, cx-eraX*1.02,earY+mH*0.48, cx-eraX*0.88,bY);
+      ctx.bezierCurveTo(cx-eraX*0.60,bY+6, cx-eraX*0.24,bY+9, cx,bY+9);
+      ctx.bezierCurveTo(cx+eraX*0.24,bY+9, cx+eraX*0.60,bY+6, cx+eraX*0.88,bY);
+      ctx.bezierCurveTo(cx+eraX*1.02,earY+mH*0.48, cx+eraX*1.06,earY+mH*0.28, cx+eraX*1.06,earY);
+      ctx.bezierCurveTo(cx+eraX*1.06,ty+fH+mH*0.58, cx+foreheadX,ty+fH+mH*0.38, cx+foreheadX,ty+fH);
+      ctx.bezierCurveTo(cx+foreheadX*0.95,hy+fH*0.40, cx+foreheadX*0.40,hy, cx,hy);
+      ctx.closePath();
+    });
+    strands([
+      [cx-foreheadX*0.20,hy+6,cx-foreheadX*0.24,ty+fH*0.6,cx-foreheadX*0.32,earY,cx-foreheadX*0.40,bY,0.7],
+      [cx,hy+4,cx,ty+fH*0.55,cx+foreheadX*0.04,earY,cx+foreheadX*0.06,bY+6,0.8],
+      [cx+foreheadX*0.20,hy+6,cx+foreheadX*0.24,ty+fH*0.6,cx+foreheadX*0.32,earY,cx+foreheadX*0.40,bY,0.7],
+      [cx-eraX*0.60,hy+12,cx-eraX*0.80,ty+fH+mH*0.3,cx-eraX*1.00,earY+mH*0.18,cx-eraX*1.02,earY+mH*0.42,0.6],
+      [cx+eraX*0.60,hy+12,cx+eraX*0.80,ty+fH+mH*0.3,cx+eraX*1.00,earY+mH*0.18,cx+eraX*1.02,earY+mH*0.42,0.6],
+    ]);
+    crown(cx,hy+fH*0.22,foreheadX*0.38,fH*0.16);
 
   } else if (style===4) {
-    // ロング
-    const lY=ty+305;
-    ctx.beginPath(); ctx.moveTo(cx,hy-8);
-    ctx.bezierCurveTo(cx-sr*0.38,hy-10, cx-sr*0.88,hy+8, cx-sr*0.95,ty+28);
-    ctx.bezierCurveTo(cx-sr*1.02,ty+68, cx-sr*1.09,ty+122, cx-sr*1.11,ty+178);
-    ctx.bezierCurveTo(cx-sr*1.11,ty+235, cx-sr*1.02,ty+272, cx-sr*0.78,lY-8);
-    ctx.bezierCurveTo(cx-sr*0.48,lY, cx-sr*0.16,lY+7, cx,lY+7);
-    ctx.bezierCurveTo(cx+sr*0.16,lY+7, cx+sr*0.48,lY, cx+sr*0.78,lY-8);
-    ctx.bezierCurveTo(cx+sr*1.02,ty+272, cx+sr*1.11,ty+235, cx+sr*1.11,ty+178);
-    ctx.bezierCurveTo(cx+sr*1.09,ty+122, cx+sr*1.02,ty+68, cx+sr*0.95,ty+28);
-    ctx.bezierCurveTo(cx+sr*0.88,hy+8, cx+sr*0.38,hy-10, cx,hy-8);
-    ctx.closePath(); fillHair(cx,hy,cx,lY+7);
-    [[cx-sr*0.16,cx-sr*0.20,lY,-20],[cx,cx+sr*0.10,lY+5,6],[cx+sr*0.16,cx+sr*0.20,lY,20],[cx-sr*0.50,cx-sr*0.88,ty+278,-14],[cx+sr*0.50,cx+sr*0.88,ty+278,14],[cx-sr*0.80,cx-sr*1.06,ty+205,-8],[cx+sr*0.80,cx+sr*1.06,ty+205,8]].forEach(([sx,ex,ey,b],i)=>strand(sx,hy+14,ex,ey,b,0.18,0.55+i%2*0.25));
-    shine(cx-sr*0.1,hy+22,sr*0.40,17);
+    // セミロング（肩くらい）
+    const sY=faceBottom+mH*0.55;
+    fillH(longSide(-1,sY,eraX*1.08));
+    fillH(longSide(1,sY,eraX*1.08));
+    fillH(headPath());
+    strands([
+      [cx-foreheadX*0.18,hy+6,cx-foreheadX*0.22,ty+fH*0.6,cx-foreheadX*0.28,earY+mH*0.3,cx-eraX*0.36,sY,0.7],
+      [cx,hy+4,cx,ty+fH*0.55,cx+foreheadX*0.04,earY+mH*0.28,cx+eraX*0.06,sY+8,0.8],
+      [cx+foreheadX*0.18,hy+6,cx+foreheadX*0.22,ty+fH*0.6,cx+foreheadX*0.28,earY+mH*0.3,cx+eraX*0.36,sY,0.7],
+      [cx-eraX*0.62,hy+14,cx-eraX*0.86,ty+fH+mH*0.28,cx-eraX*1.04,earY+mH*0.5,cx-eraX*1.06,earY+mH*0.9,0.6],
+      [cx+eraX*0.62,hy+14,cx+eraX*0.86,ty+fH+mH*0.28,cx+eraX*1.04,earY+mH*0.5,cx+eraX*1.06,earY+mH*0.9,0.6],
+    ]);
+    crown(cx,hy+fH*0.22,foreheadX*0.40,fH*0.17);
 
   } else if (style===5) {
-    // ウルフカット
-    head(); fillHair(cx,hy,cx,ty+110);
-    for (const s of [-1,1] as const) {
-      ctx.beginPath();
-      ctx.moveTo(cx+s*sr*0.68,ty+38);
-      ctx.bezierCurveTo(cx+s*sr*0.90,ty+58, cx+s*sr*1.04,ty+92, cx+s*sr*1.00,ty+132);
-      ctx.bezierCurveTo(cx+s*sr*0.94,ty+162, cx+s*sr*0.78,ty+174, cx+s*sr*0.50,ty+180);
-      ctx.bezierCurveTo(cx+s*sr*0.32,ty+182, cx+s*sr*0.18,ty+172, cx+s*sr*0.14,ty+158);
-      ctx.bezierCurveTo(cx+s*sr*0.28,ty+138, cx+s*sr*0.65,ty+92, cx+s*sr*0.68,ty+38);
-      ctx.closePath(); fillHair(cx+s*sr*0.5,ty+38,cx+s*sr*0.5,ty+180);
-      [[cx+s*sr*0.70,cx+s*sr*0.50,ty+172,s*8],[cx+s*sr*0.85,cx+s*sr*0.92,ty+145,s*4]].forEach(([sx,ex,ey,b])=>strand(sx,ty+50,ex,ey,b,0.20,0.55));
-    }
-    headStrands(ty+100);
-    shine(cx-sr*0.1,hy+20,sr*0.38,15);
+    // ロング（胸くらい）
+    const lY=faceBottom+mH*1.35;
+    fillH(longSide(-1,lY,eraX*1.10));
+    fillH(longSide(1,lY,eraX*1.10));
+    fillH(headPath());
+    strands([
+      [cx-foreheadX*0.16,hy+6,cx-foreheadX*0.20,ty+fH*0.6,cx-foreheadX*0.24,earY+mH*0.6,cx-eraX*0.28,lY,0.7],
+      [cx,hy+4,cx,ty+fH*0.55,cx+foreheadX*0.05,earY+mH*0.58,cx+eraX*0.08,lY+6,0.8],
+      [cx+foreheadX*0.16,hy+6,cx+foreheadX*0.20,ty+fH*0.6,cx+foreheadX*0.24,earY+mH*0.6,cx+eraX*0.28,lY,0.7],
+      [cx-eraX*0.60,hy+14,cx-eraX*0.88,ty+fH+mH*0.3,cx-eraX*1.06,earY+mH*0.8,cx-eraX*1.08,earY+mH*1.4,0.6],
+      [cx+eraX*0.60,hy+14,cx+eraX*0.88,ty+fH+mH*0.3,cx+eraX*1.06,earY+mH*0.8,cx+eraX*1.08,earY+mH*1.4,0.6],
+    ]);
+    crown(cx,hy+fH*0.22,foreheadX*0.40,fH*0.17);
 
   } else if (style===6) {
-    // ポニーテール
-    head(); fillHair(cx,hy,cx,ty+110);
-    ctx.beginPath();
-    ctx.moveTo(cx-sr*0.16,ty+108);
-    ctx.bezierCurveTo(cx-sr*0.22,ty+150, cx-sr*0.26,ty+215, cx-sr*0.08,ty+278);
-    ctx.bezierCurveTo(cx-sr*0.02,ty+304, cx+sr*0.02,ty+304, cx+sr*0.08,ty+278);
-    ctx.bezierCurveTo(cx+sr*0.26,ty+215, cx+sr*0.22,ty+150, cx+sr*0.16,ty+108);
-    ctx.closePath(); fillHair(cx,ty+108,cx,ty+304);
-    headStrands(ty+102);
-    [[cx-sr*0.05,cx-sr*0.07,ty+280,-5],[cx+sr*0.05,cx+sr*0.07,ty+280,5]].forEach(([sx,ex,ey,b])=>strand(sx,ty+112,ex,ey,b,0.20,0.55));
-    shine(cx-sr*0.1,hy+20,sr*0.38,15);
+    // ウルフカット
+    fillH(headPath());
+    for (const sv of [-1,1] as const) {
+      fillV(()=>{
+        ctx.beginPath(); ctx.moveTo(cx+sv*eraX*0.68,ty+fH+mH*0.22);
+        ctx.bezierCurveTo(cx+sv*eraX*0.90,ty+fH+mH*0.38, cx+sv*eraX*1.04,earY+mH*0.25, cx+sv*eraX*1.02,earY+mH*0.58);
+        ctx.bezierCurveTo(cx+sv*eraX*0.96,earY+mH*0.82, cx+sv*eraX*0.78,earY+mH*0.92, cx+sv*eraX*0.52,earY+mH*0.94);
+        ctx.bezierCurveTo(cx+sv*eraX*0.34,earY+mH*0.92, cx+sv*eraX*0.18,earY+mH*0.82, cx+sv*eraX*0.16,earY+mH*0.68);
+        ctx.bezierCurveTo(cx+sv*eraX*0.28,earY+mH*0.52, cx+sv*eraX*0.62,earY+mH*0.18, cx+sv*eraX*0.68,ty+fH+mH*0.22);
+        ctx.closePath();
+      }, ty+fH+mH*0.22, earY+mH*0.94);
+    }
+    headStrands(earY+mH*0.08);
+    crown(cx,hy+fH*0.20,foreheadX*0.38,fH*0.15);
 
   } else if (style===7) {
-    // ツインテール
-    head(); fillHair(cx,hy,cx,ty+110);
-    for (const s of [-1,1] as const) {
-      ctx.beginPath();
-      ctx.moveTo(cx+s*sr*0.52,ty+86);
-      ctx.bezierCurveTo(cx+s*sr*0.80,ty+105, cx+s*sr*1.04,ty+158, cx+s*sr*0.98,ty+222);
-      ctx.bezierCurveTo(cx+s*sr*0.92,ty+262, cx+s*sr*0.76,ty+280, cx+s*sr*0.60,ty+284);
-      ctx.bezierCurveTo(cx+s*sr*0.40,ty+280, cx+s*sr*0.32,ty+260, cx+s*sr*0.36,ty+222);
-      ctx.bezierCurveTo(cx+s*sr*0.40,ty+158, cx+s*sr*0.46,ty+105, cx+s*sr*0.36,ty+86);
-      ctx.closePath(); fillHair(cx+s*sr*0.62,ty+86,cx+s*sr*0.62,ty+284);
-      [[cx+s*sr*0.46,cx+s*sr*0.64,ty+276,s*9],[cx+s*sr*0.60,cx+s*sr*0.88,ty+266,s*5]].forEach(([sx,ex,ey,b])=>strand(sx,ty+98,ex,ey,b,0.20,0.55));
-    }
-    headStrands(ty+92);
-    shine(cx-sr*0.1,hy+20,sr*0.38,15);
+    // ポニーテール
+    fillH(headPath());
+    const tieY=ty+fH+mH*0.05;
+    fillV(()=>{
+      ctx.beginPath(); ctx.moveTo(cx-foreheadX*0.18,tieY);
+      ctx.bezierCurveTo(cx-foreheadX*0.22,tieY+mH*0.45, cx-foreheadX*0.26,tieY+mH*1.05, cx-foreheadX*0.10,tieY+mH*1.68);
+      ctx.bezierCurveTo(cx-foreheadX*0.02,tieY+mH*1.92, cx+foreheadX*0.02,tieY+mH*1.92, cx+foreheadX*0.10,tieY+mH*1.68);
+      ctx.bezierCurveTo(cx+foreheadX*0.26,tieY+mH*1.05, cx+foreheadX*0.22,tieY+mH*0.45, cx+foreheadX*0.18,tieY);
+      ctx.closePath();
+    }, tieY, tieY+mH*1.92);
+    headStrands(earY+mH*0.08);
+    strands([
+      [cx-foreheadX*0.06,tieY+4,cx-foreheadX*0.07,tieY+mH*0.7,cx-foreheadX*0.09,tieY+mH*1.4,cx-foreheadX*0.07,tieY+mH*1.85,0.7],
+      [cx+foreheadX*0.06,tieY+4,cx+foreheadX*0.07,tieY+mH*0.7,cx+foreheadX*0.09,tieY+mH*1.4,cx+foreheadX*0.07,tieY+mH*1.85,0.7],
+    ]);
+    crown(cx,hy+fH*0.20,foreheadX*0.36,fH*0.15);
 
   } else if (style===8) {
-    // お団子
-    head(); fillHair(cx,hy,cx,ty+110);
-    const bunY=hy+6, bunR=sr*0.26;
-    const bunG=ctx.createRadialGradient(cx-bunR*0.2,bunY-bunR*0.2,1,cx,bunY,bunR);
-    bunG.addColorStop(0,rga(hcL)); bunG.addColorStop(0.55,rga(hcM)); bunG.addColorStop(1,rga(hcD));
-    ctx.fillStyle=bunG; ctx.beginPath(); ctx.ellipse(cx,bunY,bunR,bunR*0.82,0,0,Math.PI*2); ctx.fill();
-    ctx.save(); ctx.strokeStyle=rga(hcD,0.25); ctx.lineWidth=0.7; ctx.lineCap="round";
-    for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2; ctx.beginPath(); ctx.moveTo(cx,bunY); ctx.lineTo(cx+Math.cos(a)*bunR*0.75,bunY+Math.sin(a)*bunR*0.62); ctx.stroke();}
-    ctx.restore();
-    headStrands(ty+100);
-    shine(cx-bunR*0.3,bunY-bunR*0.5,bunR*0.5,bunR*0.28);
+    // ツインテール
+    fillH(headPath());
+    for (const sv of [-1,1] as const) {
+      const tieX=cx+sv*eraX*0.56;
+      fillV(()=>{
+        ctx.beginPath(); ctx.moveTo(tieX,earY-mH*0.08);
+        ctx.bezierCurveTo(cx+sv*eraX*0.84,earY+mH*0.12, cx+sv*eraX*1.06,earY+mH*0.55, cx+sv*eraX*1.00,earY+mH*1.10);
+        ctx.bezierCurveTo(cx+sv*eraX*0.95,earY+mH*1.42, cx+sv*eraX*0.78,earY+mH*1.56, cx+sv*eraX*0.62,earY+mH*1.58);
+        ctx.bezierCurveTo(cx+sv*eraX*0.42,earY+mH*1.54, cx+sv*eraX*0.32,earY+mH*1.38, cx+sv*eraX*0.36,earY+mH*1.10);
+        ctx.bezierCurveTo(cx+sv*eraX*0.40,earY+mH*0.55, cx+sv*eraX*0.46,earY+mH*0.12, tieX,earY-mH*0.08);
+        ctx.closePath();
+      }, earY-mH*0.08, earY+mH*1.58);
+      strands([[tieX,earY,cx+sv*eraX*0.64,earY+mH*0.62,cx+sv*eraX*0.84,earY+mH*1.22,cx+sv*eraX*0.82,earY+mH*1.50,0.6]]);
+    }
+    headStrands(earY-mH*0.05);
+    crown(cx,hy+fH*0.20,foreheadX*0.36,fH*0.15);
 
   } else if (style===9) {
-    // ハーフアップ
-    const hfY=ty+182;
-    ctx.beginPath(); ctx.moveTo(cx,hy-8);
-    ctx.bezierCurveTo(cx-sr*0.38,hy-10, cx-sr*0.88,hy+8, cx-sr*0.95,ty+28);
-    ctx.bezierCurveTo(cx-sr*1.02,ty+68, cx-sr*1.08,ty+118, cx-sr*1.08,ty+158);
-    ctx.bezierCurveTo(cx-sr*1.06,hfY+5, cx-sr*0.88,hfY+16, cx-sr*0.60,hfY+22);
-    ctx.bezierCurveTo(cx-sr*0.30,hfY+26, cx,hfY+28, cx,hfY+28);
-    ctx.bezierCurveTo(cx,hfY+28, cx+sr*0.30,hfY+26, cx+sr*0.60,hfY+22);
-    ctx.bezierCurveTo(cx+sr*0.88,hfY+16, cx+sr*1.06,hfY+5, cx+sr*1.08,ty+158);
-    ctx.bezierCurveTo(cx+sr*1.08,ty+118, cx+sr*1.02,ty+68, cx+sr*0.95,ty+28);
-    ctx.bezierCurveTo(cx+sr*0.88,hy+8, cx+sr*0.38,hy-10, cx,hy-8);
-    ctx.closePath(); fillHair(cx,hy,cx,hfY+28);
-    // まとめ部分
-    const tY=ty+90;
-    const tG=ctx.createRadialGradient(cx,tY,0,cx,tY,sr*0.28);
-    tG.addColorStop(0,rga(hcM)); tG.addColorStop(1,rga(hcDD));
-    ctx.fillStyle=tG;
-    ctx.beginPath(); ctx.ellipse(cx,tY,sr*0.22,sr*0.10,-0.1,0,Math.PI*2); ctx.fill();
-    [[cx-sr*0.16,cx-sr*0.24,hfY+24,-16],[cx,cx,hfY+26,4],[cx+sr*0.16,cx+sr*0.24,hfY+24,16],[cx-sr*0.54,cx-sr*0.92,hfY+12,-10],[cx+sr*0.54,cx+sr*0.92,hfY+12,10]].forEach(([sx,ex,ey,b],i)=>strand(sx,hy+14,ex,ey,b,0.19,0.55+i%2*0.25));
-    shine(cx-sr*0.1,hy+22,sr*0.40,17);
+    // お団子
+    fillH(headPath());
+    const bunR=foreheadX*0.26, bunY=hy+fH*0.05;
+    const bunG=ctx.createRadialGradient(cx-bunR*0.2,bunY-bunR*0.2,1,cx,bunY,bunR);
+    bunG.addColorStop(0,rga(hcL)); bunG.addColorStop(0.5,rga(hcM)); bunG.addColorStop(1,rga(hcD));
+    ctx.save(); ctx.fillStyle=bunG; ctx.beginPath(); ctx.ellipse(cx,bunY,bunR,bunR*0.80,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    ctx.save(); ctx.strokeStyle=rga(hcD,0.22); ctx.lineWidth=0.7; ctx.lineCap="round";
+    for(let i=0;i<8;i++){const a=(i/8)*Math.PI*2; ctx.beginPath(); ctx.moveTo(cx,bunY); ctx.lineTo(cx+Math.cos(a)*bunR*0.72,bunY+Math.sin(a)*bunR*0.58); ctx.stroke();}
+    ctx.restore();
+    headStrands(earY+mH*0.05);
+    crown(cx-bunR*0.2,bunY-bunR*0.4,bunR*0.48,bunR*0.25);
 
   } else if (style===10) {
-    // サイドパート（男性）
-    head(); fillHair(cx,hy,cx,ty+110);
-    // サイドの流れ（右寄り）
-    for (const s of [-1,1] as const) {
-      ctx.beginPath();
-      ctx.moveTo(cx+s*sr*0.05,hy+5);
-      ctx.bezierCurveTo(cx+s*sr*0.30,hy+8, cx+s*sr*0.62,hy+25, cx+s*sr*0.78,ty+55);
-      ctx.bezierCurveTo(cx+s*sr*0.88,ty+80, cx+s*sr*0.86,ty+105, cx+s*sr*0.80,ty+112);
-      ctx.bezierCurveTo(cx+s*sr*0.55,ty+110, cx+s*sr*0.28,ty+108, cx+s*sr*0.05,hy+5);
-      ctx.closePath(); fillHair(cx+s*sr*0.4,hy+5,cx+s*sr*0.4,ty+112);
-    }
-    // 分け目ライン
-    ctx.save(); ctx.strokeStyle=rga(hcDD,0.35); ctx.lineWidth=0.8; ctx.lineCap="round";
-    ctx.beginPath(); ctx.moveTo(cx,hy+2); ctx.bezierCurveTo(cx-sr*0.04,hy+18,cx-sr*0.06,ty+10,cx-sr*0.05,ty+25); ctx.stroke();
-    ctx.restore();
-    [[cx-sr*0.25,cx-sr*0.40,ty+105,12],[cx+sr*0.08,cx+sr*0.28,ty+105,-8],[cx-sr*0.55,cx-sr*0.72,ty+98,6],[cx+sr*0.45,cx+sr*0.68,ty+98,-5]].forEach(([sx,ex,ey,b]:number[])=>strand(sx,hy+15,ex,ey,b,0.22,0.6));
-    shine(cx-sr*0.08,hy+18,sr*0.32,13);
+    // ハーフアップ（セミロングの上半分まとめ）
+    const hfY=faceBottom+mH*0.55;
+    fillH(longSide(-1,hfY,eraX*1.08));
+    fillH(longSide(1,hfY,eraX*1.08));
+    fillH(headPath());
+    const tieY2=ty+fH+mH*0.04;
+    ctx.save();
+    const tG=ctx.createRadialGradient(cx,tieY2,0,cx,tieY2,foreheadX*0.22);
+    tG.addColorStop(0,rga(hcM)); tG.addColorStop(1,rga(hcDD));
+    ctx.fillStyle=tG; ctx.beginPath(); ctx.ellipse(cx,tieY2,foreheadX*0.20,fH*0.07,-0.1,0,Math.PI*2); ctx.fill(); ctx.restore();
+    strands([
+      [cx-foreheadX*0.16,hy+6,cx-foreheadX*0.22,ty+fH*0.6,cx-foreheadX*0.28,earY+mH*0.3,cx-eraX*0.34,hfY,0.7],
+      [cx,hy+4,cx,ty+fH*0.55,cx,earY+mH*0.28,cx,hfY+6,0.8],
+      [cx+foreheadX*0.16,hy+6,cx+foreheadX*0.22,ty+fH*0.6,cx+foreheadX*0.28,earY+mH*0.3,cx+eraX*0.34,hfY,0.7],
+      [cx-eraX*0.60,hy+14,cx-eraX*0.86,ty+fH+mH*0.3,cx-eraX*1.04,earY+mH*0.5,cx-eraX*1.06,earY+mH*0.88,0.6],
+      [cx+eraX*0.60,hy+14,cx+eraX*0.86,ty+fH+mH*0.3,cx+eraX*1.04,earY+mH*0.5,cx+eraX*1.06,earY+mH*0.88,0.6],
+    ]);
+    crown(cx,hy+fH*0.22,foreheadX*0.40,fH*0.17);
 
   } else if (style===11) {
+    // サイドパート（男性）
+    fillH(headPath());
+    ctx.save(); ctx.strokeStyle=rga(hcDD,0.4); ctx.lineWidth=0.9; ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(cx,hy+2); ctx.bezierCurveTo(cx-foreheadX*0.04,hy+fH*0.22,cx-foreheadX*0.05,ty+fH*0.55,cx-foreheadX*0.04,ty+fH*0.85); ctx.stroke(); ctx.restore();
+    strands([
+      [cx-foreheadX*0.04,hy+fH*0.12,cx-foreheadX*0.30,ty+fH*0.42,cx-foreheadX*0.50,ty+fH*0.82,cx-foreheadX*0.60,earY+mH*0.04,0.8],
+      [cx-foreheadX*0.04,hy+fH*0.16,cx-foreheadX*0.52,ty+fH*0.50,cx-eraX*0.78,ty+fH+mH*0.20,cx-eraX*0.92,earY+mH*0.08,0.7],
+      [cx-foreheadX*0.04,hy+fH*0.20,cx-foreheadX*0.70,ty+fH*0.58,cx-eraX*0.92,ty+fH+mH*0.25,cx-eraX*0.98,earY+mH*0.10,0.6],
+      [cx+foreheadX*0.06,hy+fH*0.12,cx+foreheadX*0.28,ty+fH*0.42,cx+foreheadX*0.46,ty+fH*0.82,cx+foreheadX*0.56,earY+mH*0.04,0.8],
+      [cx+foreheadX*0.06,hy+fH*0.16,cx+foreheadX*0.48,ty+fH*0.50,cx+eraX*0.76,ty+fH+mH*0.20,cx+eraX*0.90,earY+mH*0.08,0.7],
+      [cx+foreheadX*0.06,hy+fH*0.20,cx+foreheadX*0.66,ty+fH*0.58,cx+eraX*0.90,ty+fH+mH*0.25,cx+eraX*0.96,earY+mH*0.10,0.6],
+    ]);
+    crown(cx-foreheadX*0.12,hy+fH*0.18,foreheadX*0.30,fH*0.12);
+
+  } else if (style===12) {
     // ツーブロック（男性）
-    // 上部ヘアのみ（サイドは短く）
-    ctx.beginPath(); ctx.moveTo(cx,hy-5);
-    ctx.bezierCurveTo(cx-sr*0.38,hy-7, cx-sr*0.85,hy+10, cx-sr*0.90,ty+22);
-    ctx.bezierCurveTo(cx-sr*0.88,ty+40, cx-sr*0.82,ty+58, cx-sr*0.70,ty+70);
-    ctx.bezierCurveTo(cx-sr*0.50,ty+78, cx-sr*0.22,ty+82, cx,ty+82);
-    ctx.bezierCurveTo(cx+sr*0.22,ty+82, cx+sr*0.50,ty+78, cx+sr*0.70,ty+70);
-    ctx.bezierCurveTo(cx+sr*0.82,ty+58, cx+sr*0.88,ty+40, cx+sr*0.90,ty+22);
-    ctx.bezierCurveTo(cx+sr*0.85,hy+10, cx+sr*0.38,hy-7, cx,hy-5);
-    ctx.closePath(); fillHair(cx,hy,cx,ty+82);
-    // サイドの刈り上げ部分（薄く）
-    for (const s of [-1,1] as const) {
-      ctx.beginPath();
-      ctx.moveTo(cx+s*sr*0.70,ty+68);
-      ctx.bezierCurveTo(cx+s*sr*0.88,ty+78, cx+s*sr*0.95,ty+95, cx+s*sr*0.92,ty+115);
-      ctx.bezierCurveTo(cx+s*sr*0.85,ty+125, cx+s*sr*0.72,ty+128, cx+s*sr*0.58,ty+125);
-      ctx.bezierCurveTo(cx+s*sr*0.62,ty+105, cx+s*sr*0.68,ty+82, cx+s*sr*0.70,ty+68);
+    fillH(()=>{
+      ctx.beginPath(); ctx.moveTo(cx,hy);
+      ctx.bezierCurveTo(cx-foreheadX*0.40,hy, cx-foreheadX*0.92,hy+fH*0.32, cx-foreheadX*0.96,ty+fH*0.65);
+      ctx.bezierCurveTo(cx-foreheadX*0.96,ty+fH*0.88, cx-foreheadX*0.90,ty+fH*1.10, cx-foreheadX*0.80,ty+fH*1.28);
+      ctx.bezierCurveTo(cx-foreheadX*0.58,ty+fH*1.40, cx-foreheadX*0.24,ty+fH*1.48, cx,ty+fH*1.48);
+      ctx.bezierCurveTo(cx+foreheadX*0.24,ty+fH*1.48, cx+foreheadX*0.58,ty+fH*1.40, cx+foreheadX*0.80,ty+fH*1.28);
+      ctx.bezierCurveTo(cx+foreheadX*0.90,ty+fH*1.10, cx+foreheadX*0.96,ty+fH*0.88, cx+foreheadX*0.96,ty+fH*0.65);
+      ctx.bezierCurveTo(cx+foreheadX*0.92,hy+fH*0.32, cx+foreheadX*0.40,hy, cx,hy);
       ctx.closePath();
-      const clipG=ctx.createLinearGradient(cx+s*sr*0.60,ty+68,cx+s*sr*0.60,ty+125);
-      clipG.addColorStop(0,rga(hcM,0.7)); clipG.addColorStop(1,rga(hcDD,0.3));
-      ctx.fillStyle=clipG; ctx.fill();
+    });
+    for (const sv of [-1,1] as const) {
+      ctx.save();
+      const cg=ctx.createLinearGradient(cx+sv*eraX*0.62,ty+fH*1.22,cx+sv*eraX*0.62,earY+mH*0.28);
+      cg.addColorStop(0,rga(hcM,0.65)); cg.addColorStop(1,rga(hcDD,0.25));
+      ctx.fillStyle=cg;
+      ctx.beginPath(); ctx.moveTo(cx+sv*eraX*0.74,ty+fH*1.22);
+      ctx.bezierCurveTo(cx+sv*eraX*0.90,ty+fH*1.32, cx+sv*eraX*1.00,earY+mH*0.08, cx+sv*eraX*0.96,earY+mH*0.22);
+      ctx.bezierCurveTo(cx+sv*eraX*0.88,earY+mH*0.30, cx+sv*eraX*0.72,earY+mH*0.32, cx+sv*eraX*0.58,earY+mH*0.28);
+      ctx.bezierCurveTo(cx+sv*eraX*0.62,earY+mH*0.12, cx+sv*eraX*0.68,ty+fH*1.34, cx+sv*eraX*0.74,ty+fH*1.22);
+      ctx.closePath(); ctx.fill(); ctx.restore();
     }
-    [[cx,cx+sr*0.05,ty+78,3],[cx-sr*0.30,cx-sr*0.42,ty+76,-5],[cx+sr*0.30,cx+sr*0.42,ty+76,5],[cx-sr*0.55,cx-sr*0.65,ty+68,-3],[cx+sr*0.55,cx+sr*0.65,ty+68,3]].forEach(([sx,ex,ey,b]:number[])=>strand(sx,hy+12,ex,ey,b,0.22,0.6));
-    shine(cx-sr*0.08,hy+17,sr*0.30,12);
+    strands([
+      [cx,hy+fH*0.10,cx+foreheadX*0.02,ty+fH*0.45,cx+foreheadX*0.04,ty+fH*0.85,cx+foreheadX*0.05,ty+fH*1.42,0.8],
+      [cx-foreheadX*0.30,hy+fH*0.14,cx-foreheadX*0.38,ty+fH*0.48,cx-foreheadX*0.50,ty+fH*0.88,cx-foreheadX*0.56,ty+fH*1.40,0.7],
+      [cx+foreheadX*0.30,hy+fH*0.14,cx+foreheadX*0.38,ty+fH*0.48,cx+foreheadX*0.50,ty+fH*0.88,cx+foreheadX*0.56,ty+fH*1.40,0.7],
+    ]);
+    crown(cx,hy+fH*0.15,foreheadX*0.28,fH*0.12);
+
+  } else if (style===13) {
+    // マッシュ（男性）
+    fillH(headPath());
+    for (const sv of [-1,1] as const) {
+      fillV(()=>{
+        ctx.beginPath(); ctx.moveTo(cx+sv*eraX*0.58,ty+fH*0.62);
+        ctx.bezierCurveTo(cx+sv*eraX*0.90,ty+fH*0.78, cx+sv*eraX*1.02,ty+fH+mH*0.25, cx+sv*eraX*0.98,earY+mH*0.12);
+        ctx.bezierCurveTo(cx+sv*eraX*0.88,earY+mH*0.22, cx+sv*eraX*0.66,earY+mH*0.25, cx+sv*eraX*0.44,earY+mH*0.22);
+        ctx.bezierCurveTo(cx+sv*eraX*0.50,earY+mH*0.05, cx+sv*eraX*0.58,ty+fH*0.78, cx+sv*eraX*0.58,ty+fH*0.62);
+        ctx.closePath();
+      }, ty+fH*0.62, earY+mH*0.25);
+    }
+    strands([
+      [cx,hy+fH*0.10,cx+foreheadX*0.04,ty+fH*0.48,cx+foreheadX*0.06,ty+fH+mH*0.18,cx+foreheadX*0.07,earY+mH*0.15,0.8],
+      [cx-foreheadX*0.32,hy+fH*0.14,cx-foreheadX*0.42,ty+fH*0.52,cx-foreheadX*0.58,ty+fH+mH*0.20,cx-foreheadX*0.62,earY+mH*0.18,0.7],
+      [cx+foreheadX*0.32,hy+fH*0.14,cx+foreheadX*0.42,ty+fH*0.52,cx+foreheadX*0.58,ty+fH+mH*0.20,cx+foreheadX*0.62,earY+mH*0.18,0.7],
+      [cx-eraX*0.64,ty+fH*0.65,cx-eraX*0.84,ty+fH+mH*0.18,cx-eraX*0.96,earY+mH*0.05,cx-eraX*0.94,earY+mH*0.18,0.6],
+      [cx+eraX*0.64,ty+fH*0.65,cx+eraX*0.84,ty+fH+mH*0.18,cx+eraX*0.96,earY+mH*0.05,cx+eraX*0.94,earY+mH*0.18,0.6],
+    ]);
+    crown(cx,hy+fH*0.20,foreheadX*0.38,fH*0.15);
 
   } else {
-    // マッシュ（デフォルト）
-    head(); fillHair(cx,hy,cx,ty+110);
-    for (const s of [-1,1] as const) {
-      ctx.beginPath();
-      ctx.moveTo(cx+s*sr*0.58,ty+18);
-      ctx.bezierCurveTo(cx+s*sr*0.88,ty+34, cx+s*sr*1.00,ty+65, cx+s*sr*0.96,ty+105);
-      ctx.bezierCurveTo(cx+s*sr*0.86,ty+118, cx+s*sr*0.65,ty+124, cx+s*sr*0.42,ty+122);
-      ctx.bezierCurveTo(cx+s*sr*0.52,ty+92, cx+s*sr*0.60,ty+52, cx+s*sr*0.58,ty+18);
-      ctx.closePath(); fillHair(cx+s*sr*0.68,ty+18,cx+s*sr*0.48,ty+122);
-    }
-    [[cx,cx,ty+105,4],[cx-sr*0.32,cx-sr*0.52,ty+115,-7],[cx+sr*0.32,cx+sr*0.52,ty+115,7],[cx-sr*0.62,cx-sr*0.90,ty+108,-5],[cx+sr*0.62,cx+sr*0.90,ty+108,5]].forEach(([sx,ex,ey,b],i)=>strand(sx,hy+16,ex,ey,b,0.24,0.6+i%2*0.3));
-    shine(cx-sr*0.1,hy+20,sr*0.38,15);
+    // オールバック（男性）
+    fillH(headPath());
+    strands([
+      [cx-foreheadX*0.24,hy+fH*0.08,cx-foreheadX*0.10,hy+fH*0.25,cx-foreheadX*0.04,ty+fH*0.52,cx+foreheadX*0.08,ty+fH*0.88,0.8],
+      [cx-foreheadX*0.46,hy+fH*0.12,cx-foreheadX*0.20,hy+fH*0.30,cx-foreheadX*0.08,ty+fH*0.56,cx+foreheadX*0.06,ty+fH*0.95,0.7],
+      [cx-foreheadX*0.66,hy+fH*0.18,cx-foreheadX*0.32,hy+fH*0.36,cx-foreheadX*0.12,ty+fH*0.62,cx+foreheadX*0.04,ty+fH+mH*0.02,0.6],
+      [cx+foreheadX*0.08,hy+fH*0.08,cx+foreheadX*0.22,hy+fH*0.25,cx+foreheadX*0.30,ty+fH*0.52,cx+foreheadX*0.40,ty+fH*0.88,0.8],
+      [cx+foreheadX*0.28,hy+fH*0.12,cx+foreheadX*0.44,hy+fH*0.30,cx+foreheadX*0.56,ty+fH*0.56,cx+foreheadX*0.66,ty+fH*0.95,0.7],
+      [cx+foreheadX*0.50,hy+fH*0.18,cx+foreheadX*0.70,hy+fH*0.36,cx+eraX*0.80,ty+fH*0.62,cx+eraX*0.88,ty+fH+mH*0.02,0.6],
+      [cx-eraX*0.86,ty+fH+mH*0.02,cx-eraX*0.94,ty+fH+mH*0.25,cx-eraX*0.96,earY+mH*0.05,cx-eraX*0.94,earY+mH*0.15,0.6],
+      [cx+eraX*0.86,ty+fH+mH*0.02,cx+eraX*0.94,ty+fH+mH*0.25,cx+eraX*0.96,earY+mH*0.05,cx+eraX*0.94,earY+mH*0.15,0.6],
+    ]);
+    crown(cx+foreheadX*0.16,hy+fH*0.20,foreheadX*0.32,fH*0.13);
   }
 }
 
 function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, fH:number, vol:number, bangStyle:number, mainColor:string) {
   if (bangStyle===0) return;
   const foreheadX = fw*0.92;
-  const sr = foreheadX * vol;           
-  const bangTop = ty - fH*0.12;         
-  const bangBot = ty + fH*0.55;         
-  const hc=hr(mainColor), hcM=drk(hc,15), hcD=drk(hc,30);
+  const sr = foreheadX * vol;           // 前髪幅 = 額幅基準
+  const bangTop = ty - fH*0.12;         // 前髪の付け根（頭頂部より少し下）
+  const bangBot = ty + fH*0.55;         // 前髪の下端（額の中ほど）
+
+  const hc=hr(mainColor), hcD=drk(hc,30), hcM=drk(hc,15), hcDD=drk(hc,48);
 
   const fillBang=(path:()=>void)=>{
-    ctx.save(); ctx.fillStyle=rga(hcM); path(); ctx.fill(); ctx.restore();
+    const g=ctx.createLinearGradient(cx,bangTop,cx,bangBot+fH*0.10);
+    g.addColorStop(0,rga(hcD)); g.addColorStop(0.35,rga(hcM)); g.addColorStop(0.75,rga(hcD)); g.addColorStop(1,rga(hcDD,0.7));
+    ctx.save(); path(); ctx.fillStyle=g; ctx.fill(); ctx.restore();
   };
-
-  if (bangStyle===1) { // ぱっつん
-    fillBang(()=>{
-      ctx.beginPath(); ctx.moveTo(cx-sr, bangTop);
-      ctx.lineTo(cx-sr, ty+fH*0.12);
-      ctx.bezierCurveTo(cx-sr*0.6, bangBot, cx+sr*0.6, bangBot, cx+sr, ty+fH*0.12);
-      ctx.lineTo(cx+sr, bangTop); ctx.closePath();
-    });
-  } else if (bangStyle===3) { // センター分け
-    for (const s of [-1,1] as const) {
-      fillBang(()=>{
-        ctx.beginPath(); ctx.moveTo(cx+s*sr*0.02, bangTop);
-        ctx.bezierCurveTo(cx+s*sr*0.3, bangBot-10, cx+s*sr*0.8, ty+fH*0.1, cx+s*sr, bangTop);
-        ctx.closePath();
-      });
-    }
-  } else if (bangStyle===5) { // シースルー
-    ctx.save(); ctx.globalAlpha=0.6;
-    for(let i=-2; i<=2; i++) {
-      ctx.beginPath(); ctx.ellipse(cx+i*sr*0.35, ty+fH*0.2, sr*0.1, fH*0.4, 0, 0, Math.PI*2);
-      ctx.fillStyle=rga(hcM); ctx.fill();
+  const bStrands=(n:number,x0:number,x1:number,yBot:number)=>{
+    ctx.save(); ctx.lineCap="round"; ctx.strokeStyle=rga(hcD,0.15); ctx.lineWidth=0.9;
+    for(let i=0;i<n;i++){
+      const t=(i+0.5)/n, bx=x0+t*(x1-x0), curve=(t-0.5)*foreheadX*0.08;
+      ctx.beginPath(); ctx.moveTo(bx,bangTop);
+      ctx.bezierCurveTo(bx+curve,bangTop+fH*0.18, bx+curve*1.4,bangTop+fH*0.40, bx+curve*0.8,yBot);
+      ctx.stroke();
     }
     ctx.restore();
-  } else { // その他（斜め・流し）
+  };
+
+  if (bangStyle===1) {
+    // ぱっつん
     fillBang(()=>{
-      ctx.beginPath(); ctx.moveTo(cx-sr, bangTop);
-      ctx.bezierCurveTo(cx-sr*0.5, bangBot, cx+sr*0.8, ty+fH*0.2, cx+sr, bangTop);
-      ctx.closePath();
+      ctx.beginPath(); ctx.moveTo(cx-sr*0.90,bangTop);
+      ctx.lineTo(cx-sr*0.90,ty+fH*0.12);
+      ctx.bezierCurveTo(cx-sr*0.62,bangBot-fH*0.04, cx-sr*0.28,bangBot, cx,bangBot);
+      ctx.bezierCurveTo(cx+sr*0.28,bangBot, cx+sr*0.62,bangBot-fH*0.04, cx+sr*0.90,ty+fH*0.12);
+      ctx.lineTo(cx+sr*0.90,bangTop); ctx.closePath();
     });
+    bStrands(6,cx-sr*0.82,cx+sr*0.82,bangBot-fH*0.03);
+
+  } else if (bangStyle===2) {
+    // 斜め（右流し）
+    fillBang(()=>{
+      ctx.beginPath(); ctx.moveTo(cx-sr*0.88,bangTop);
+      ctx.lineTo(cx-sr*0.88,ty+fH*0.10);
+      ctx.bezierCurveTo(cx-sr*0.55,bangBot-fH*0.08, cx-sr*0.08,bangBot+fH*0.06, cx+sr*0.22,bangBot-fH*0.02);
+      ctx.bezierCurveTo(cx+sr*0.54,bangBot-fH*0.14, cx+sr*0.84,ty+fH*0.04, cx+sr*0.90,ty+fH*0.08);
+      ctx.lineTo(cx+sr*0.90,bangTop); ctx.closePath();
+    });
+    bStrands(5,cx-sr*0.80,cx+sr*0.82,bangBot-fH*0.05);
+
+  } else if (bangStyle===3) {
+    // センター分け
+    for (const sv of [-1,1] as const) {
+      fillBang(()=>{
+        ctx.beginPath(); ctx.moveTo(cx+sv*sr*0.02,bangTop);
+        ctx.lineTo(cx+sv*sr*0.02,ty+fH*0.10);
+        ctx.bezierCurveTo(cx+sv*sr*0.22,bangBot-fH*0.05, cx+sv*sr*0.52,bangBot-fH*0.02, cx+sv*sr*0.74,bangBot-fH*0.08);
+        ctx.bezierCurveTo(cx+sv*sr*0.86,bangBot-fH*0.14, cx+sv*sr*0.90,ty+fH*0.04, cx+sv*sr*0.90,ty+fH*0.08);
+        ctx.lineTo(cx+sv*sr*0.90,bangTop); ctx.closePath();
+      });
+      bStrands(3,cx+sv*sr*0.04,cx+sv*sr*0.84,bangBot-fH*0.06);
+    }
+
+  } else if (bangStyle===4) {
+    // 流し前髪（深め）
+    fillBang(()=>{
+      ctx.beginPath(); ctx.moveTo(cx-sr*0.90,bangTop);
+      ctx.lineTo(cx-sr*0.90,ty+fH*0.10);
+      ctx.bezierCurveTo(cx-sr*0.60,bangBot, cx-sr*0.12,bangBot+fH*0.12, cx+sr*0.14,bangBot+fH*0.08);
+      ctx.bezierCurveTo(cx+sr*0.44,bangBot, cx+sr*0.78,ty+fH*0.08, cx+sr*0.90,ty+fH*0.06);
+      ctx.lineTo(cx+sr*0.90,bangTop); ctx.closePath();
+    });
+    bStrands(5,cx-sr*0.82,cx+sr*0.82,bangBot+fH*0.06);
+
+  } else if (bangStyle===5) {
+    // シースルー
+    ctx.save(); ctx.globalAlpha=0.62;
+    fillBang(()=>{
+      ctx.beginPath(); ctx.moveTo(cx-sr*0.82,bangTop);
+      ctx.lineTo(cx-sr*0.82,ty+fH*0.12);
+      ctx.bezierCurveTo(cx-sr*0.52,bangBot-fH*0.04, cx-sr*0.20,bangBot, cx,bangBot);
+      ctx.bezierCurveTo(cx+sr*0.20,bangBot, cx+sr*0.52,bangBot-fH*0.04, cx+sr*0.82,ty+fH*0.12);
+      ctx.lineTo(cx+sr*0.82,bangTop); ctx.closePath();
+    });
+    ctx.restore();
+    bStrands(7,cx-sr*0.75,cx+sr*0.75,bangBot-fH*0.02);
+
+  } else {
+    // ウィスプ
+    ctx.save(); ctx.globalAlpha=0.75;
+    fillBang(()=>{
+      ctx.beginPath(); ctx.moveTo(cx-sr*0.46,bangTop);
+      ctx.lineTo(cx-sr*0.46,ty+fH*0.14);
+      ctx.bezierCurveTo(cx-sr*0.28,bangBot-fH*0.04, cx-sr*0.10,bangBot, cx,bangBot);
+      ctx.bezierCurveTo(cx+sr*0.10,bangBot, cx+sr*0.28,bangBot-fH*0.04, cx+sr*0.46,ty+fH*0.14);
+      ctx.lineTo(cx+sr*0.46,bangTop); ctx.closePath();
+    });
+    ctx.restore();
+    bStrands(4,cx-sr*0.40,cx+sr*0.40,bangBot-fH*0.02);
   }
 }
 
@@ -591,13 +708,12 @@ export default function Home() {
     const ty=210-(fH+mH+cH)/2;
     const midStart=ty+fH, midEnd=midStart+mH;
 
-drawHairBack(ctx,cx,ty,fw,fH,mH,cH,eraW,st.hairBack,st.hairVol,st.hairMain);
+    drawHairBack(ctx,cx,ty,fw,fH,mH,cH,eraW,st.hairBack,st.hairVol,st.hairMain);
 
     const faceMidY=ty+(fH+mH+cH)*0.5;
     const g=ctx.createRadialGradient(cx,faceMidY,4,cx,faceMidY,fw*1.5);
     g.addColorStop(0,sk.hi); g.addColorStop(0.28,sk.base); g.addColorStop(0.70,sk.mid); g.addColorStop(1,sk.dark);
     ctx.fillStyle=g; ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.fill();
-  
 
     const cColor=hr(st.cheekColor);
     ctx.save(); ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.clip();
@@ -610,7 +726,6 @@ drawHairBack(ctx,cx,ty,fw,fH,mH,cH,eraW,st.hairBack,st.hairVol,st.hairMain);
       ctx.fillStyle=gCheek; ctx.beginPath(); ctx.ellipse(chX,chY,r,r*0.65,0,0,Math.PI*2); ctx.fill();
     }
     ctx.restore();
-
 
     drawFaceShadow(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW,sk,shadow);
     drawEars(ctx,cx,ty,fw,mH,sk,st.earSize,st.earY,eraW,faceW,fH);
@@ -879,7 +994,7 @@ drawHairBack(ctx,cx,ty,fw,fH,mH,cH,eraW,st.hairBack,st.hairVol,st.hairMain);
           </Sec>
 
           <Sec title="髪">
-            <Tabs label="後ろ" v={s.hairBack} opts={["ベリショ","ショート","ボブ","セミロング","ロング","ウルフ","ポニー","ツイン","お団子","ハーフアップ","サイドパート","ツーブロック","マッシュ"]} fn={v=>set("hairBack",v)} />
+            <Tabs label="後ろ" v={s.hairBack} opts={["坊主","ベリショ","ショート","ボブ","セミロング","ロング","ウルフ","ポニー","ツイン","お団子","ハーフアップ","サイドパート","ツーブロック","マッシュ","オールバック"]} fn={v=>set("hairBack",v)} />
             <Tabs label="前髪"       v={s.hairBang} opts={["なし","ぱっつん","斜め","センター","流し","シースルー","ウィスプ"]} fn={v=>set("hairBang",v)} />
             <Sld  label="ボリューム" v={s.hairVol}  mn={0}   mx={1.5} st={0.04} fn={v=>set("hairVol",v)} />
             <ColorSwatch label="髪色" v={s.hairMain} fn={v=>set("hairMain",v)} list={HAIR_COLORS} />
@@ -944,8 +1059,8 @@ const MAKEUP_COLORS = [
   "#b06080","#e080b0","#f0c0e0","#8040a0","#60208a",
 ];
 const CHEEK_COLORS = [
-  "#f0a0a0","#e08870","#d07090","#c05858","#c03868","#a06040",
-  "#f8c0c0","#ffd0e8","#e8a0c0","#d080a0","#f0d0b0","#e0b090",
+  "#f0a0a0","#e08870","#d07090","#c05858","#a06040","#f8c0c0",
+  "#ffd0e8","#e8a0c0","#d080a0","#f0d0b0","#e0b090",
 ];
 const TEARBAG_COLORS = [
   "skin",
