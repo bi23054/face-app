@@ -347,7 +347,7 @@ type FaceState = {
   lashLenI:number; lashLenC:number; lashLenO:number;
   lashDensI:number; lashDensC:number; lashDensO:number;
   eyeShadowW:number; eyeShadowH:number; eyeShadowColor:string;
-  tearBag:number; tearBagSize:number; tearBagAlpha:number; tearBagColor:string;
+  tearBag:number; tearBagSize:number; tearBagAlpha:number; tearBagColor:string; tearBagColorAlpha: number;
   browY:number; browDist:number; browW:number; browAngle:number; browT:number; browDens:number; browShape:number; browColor:string;
   noseBr:number; noseLen:number; noseWide:number; alaeSize:number;
   mouthW:number; upperLipT:number; lowerLipT:number; mouthVert:number; cornerLift:number; lipColor:string;
@@ -366,7 +366,7 @@ const DEFAULT_STATE: FaceState = {
   lashLenI:1.50, lashLenC:0.70, lashLenO:0.70,
   lashDensI:1.10, lashDensC:1.00, lashDensO:1.00,
   eyeShadowW:0, eyeShadowH:0, eyeShadowColor:"#a06040",
-  tearBag:1, tearBagSize:3.5, tearBagAlpha:0.3, tearBagColor:"skin",
+  tearBag:1, tearBagSize:3.5, tearBagAlpha:0.3, tearBagColor:"skin", tearBagColorAlpha: 0.5,
   browY:2.50, browDist:-7, browW:0.80, browAngle:-0.60, browT:2.00, browDens:1.50, browShape:1, browColor:"#1a0f06",
   noseBr:1.2, noseLen:1.0, noseWide:1.0, alaeSize:1.0,
   mouthW:0.7, upperLipT:1.0, lowerLipT:1.0, mouthVert:15, cornerLift:1.0, lipColor:"#c05858",
@@ -503,22 +503,23 @@ export default function Home() {
       }
 
 if (st.tearBag>0&&st.tearBagSize>0) {
-        // --- 1. 涙袋の「色」を塗る（目の下のラインに沿わせる） ---
+        // --- 1. 涙袋の「色」を塗る（サイズに合わせて形が変化する！） ---
         if (st.tearBagColor !== "skin") {
           const tbC = hr(st.tearBagColor);
+          const tbSize = st.tearBagSize; // ユーザーが選んだサイズ
           ctx.save();
           ctx.beginPath();
-          // 目の下のライン
+          // 【上端】目の下のライン
           ctx.moveTo(ex+ew, eyeY_abs+outerY*0.5);
           ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76, ex-ew*0.18, eyeY_abs+eh*0.76, ex-ew, eyeY_abs+innerY*0.5);
-          // 涙袋の影のライン（下側）
-          ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+st.tearBagSize*1.5, ex+ew*0.38, eyeY_abs+eh*0.76+st.tearBagSize*1.5, ex+ew, eyeY_abs+outerY*0.5+st.tearBagSize*1.2);
+          // 【下端】涙袋のサイズに合わせてカーブも膨らむように計算
+          ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+tbSize*1.6, ex+ew*0.38, eyeY_abs+eh*0.76+tbSize*1.6, ex+ew, eyeY_abs+outerY*0.5+tbSize*1.3);
           ctx.closePath();
           
-          // 縦方向のグラデーションにして「目の際」を濃くする
-          const tbG = ctx.createLinearGradient(ex, eyeY_abs+eh*0.5, ex, eyeY_abs+eh*0.76+st.tearBagSize);
-          tbG.addColorStop(0, rga(tbC, st.tearBagAlpha * 0.8)); // 目の際はしっかり
-          tbG.addColorStop(1, rga(tbC, 0));                   // 下にいくほど消える
+          // グラデーションの終点もサイズに連動
+          const tbG = ctx.createLinearGradient(ex, eyeY_abs+eh*0.5, ex, eyeY_abs+eh*0.76+tbSize);
+          tbG.addColorStop(0, rga(tbC, st.tearBagColorAlpha)); // 濃さ（透明度）も反映
+          tbG.addColorStop(1, rga(tbC, 0));
           
           ctx.fillStyle = tbG;
           ctx.fill();
@@ -659,7 +660,10 @@ return (
               <Sld label="涙袋の幅" v={s.tearBagSize}  mn={0.1} mx={8.0} st={0.1}  fn={v=>set("tearBagSize",v)} />
               <Sld label="涙袋の濃さ" v={s.tearBagAlpha} mn={0.02} mx={0.8} st={0.02} fn={v=>set("tearBagAlpha",v)} />
               <TearBagColorSwatch label="カラー" v={s.tearBagColor} fn={v=>set("tearBagColor",v)} />
-            </Ind>}
+              {s.tearBagColor !== "skin" && (
+  <Sld label="カラーの濃さ" v={s.tearBagColorAlpha} mn={0} mx={1.0} st={0.05} fn={v=>set("tearBagColorAlpha",v)} />
+)}
+  </Ind>}
           </Sec>
 
           <Sec title="まつ毛">
