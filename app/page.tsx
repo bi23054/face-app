@@ -242,27 +242,31 @@ function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number
 }
 
 function drawEyebrow(ctx:CanvasRenderingContext2D, bx:number, side:number, baseY:number, bW:number, targetAngle:number, bT:number, bDens:number, bShape:number, browColor:string) {
-  const hc=hr(browColor), hw=19*bW, archD=bShape===0?bT*2.2:bT*0.2;
-  ctx.save(); ctx.translate(bx,baseY); ctx.scale(side,1); ctx.lineCap="round";
-  const layers=[{count:32,alpha:0.18,thick:0.6,len:1.15},{count:18,alpha:0.60,thick:1.0,len:0.9}];
-  layers.forEach((ly,lIdx)=>{
-    const hairCount=Math.round(ly.count*bW*bDens);
-    for (let i=0;i<hairCount;i++) {
-      const t=i/(hairCount-1);
-      const rx=-hw+t*hw*2, ry=-archD*Math.sin(t*Math.PI)*0.9+(t*targetAngle*5.0);
-      const sleepT=Math.pow(t,0.4);
-      const baseAng=(-Math.PI*0.45)*(1-sleepT);
-      const currentAng=baseAng+(targetAngle*0.2);
-      const shake=Math.sin(i*0.5+lIdx*10), taperFactor=1.0-(t*0.7);
-      const headFade=0.6+0.4*smoothstep(0,0.2,t), opacityFade=0.7+0.3*smoothstep(0,0.15,t);
-      const thick=bT*ly.thick*taperFactor, len=bT*ly.len*taperFactor*(3.5+shake*0.4)*headFade;
-      ctx.strokeStyle=rga(hc,bDens*ly.alpha*taperFactor*opacityFade); ctx.lineWidth=thick;
-      ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx+Math.cos(currentAng)*len,ry+Math.sin(currentAng)*len*0.4); ctx.stroke();
-    }
-  });
-  ctx.restore();
+  const hc=hr(browColor), hw=19*bW, archD=bShape===0?bT*2.2:bT*0.2;
+  ctx.save(); ctx.translate(bx,baseY); ctx.scale(side,1); ctx.lineCap="round";
+  const layers=[{count:32,alpha:0.18,thick:0.6,len:1.15},{count:18,alpha:0.60,thick:1.0,len:0.9}];
+  layers.forEach((ly,lIdx)=>{
+    const hairCount=Math.round(ly.count*bW*bDens);
+    for (let i=0;i<hairCount;i++) {
+      const t=i/(hairCount-1);
+      const rx=-hw+t*hw*2, ry=-archD*Math.sin(t*Math.PI)*0.9+(t*targetAngle*5.0);
+      const sleepT=Math.pow(t,0.4);
+      const baseAng=(-Math.PI*0.45)*(1-sleepT);
+      const currentAng=baseAng+(targetAngle*0.2);
+      const shake=Math.sin(i*0.5+lIdx*10), taperFactor=1.0-(t*0.7);
+      
+      // ★ここを修正：眉頭(t=0)は全体密度(bDens)に関わらず、さらに薄くする
+      const startFade = 0.35 + 0.65 * smoothstep(0, 0.25, t); 
+      const opacityTaper = taperFactor * startFade;
+      const thick=bT*ly.thick*taperFactor, len=bT*ly.len*taperFactor*(3.5+shake*0.4);
+      
+      // アルファチャネル（透明度）の計算に opacityTaper を適用
+      ctx.strokeStyle=rga(hc,bDens*ly.alpha*opacityTaper); ctx.lineWidth=thick;
+      ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx+Math.cos(currentAng)*len,ry+Math.sin(currentAng)*len*0.4); ctx.stroke();
+    }
+  });
+  ctx.restore();
 }
-
 function drawNose(ctx:CanvasRenderingContext2D, cx:number, ny:number, noseLen:number, noseWide:number, alaeSize:number, bridge:number, sk:Skin, intensity:number) {
   const nHH=26*noseLen, nW=10*noseWide*0.9, aS=Math.max(0.01,alaeSize)*0.7;
   const cBase=hr(sk.base), cMid=hr(sk.mid), cDark=hr(sk.dark);
@@ -309,34 +313,35 @@ function drawNose(ctx:CanvasRenderingContext2D, cx:number, ny:number, noseLen:nu
 }
 
 function drawMouth(ctx:CanvasRenderingContext2D, cx:number, my:number, mw:number, upperT:number, lowerT:number, cornerLift:number, lipColor:string) {
-  const MW=21*mw, uH=6.0*upperT, lH=8.5*lowerT, cY=-cornerLift*2.5;
-  const lC=hr(lipColor), lCL=lit(lC,20), lCD=drk(lC,32), lCM=drk(lC,10);
-  const upper=(close=false)=>{
-    ctx.moveTo(cx-MW,my+1.8+cY);
-    ctx.bezierCurveTo(cx-MW*0.54,my-uH*0.22+cY*0.5,cx-MW*0.22,my-uH,cx-MW*0.09,my-uH*1.2);
-    ctx.bezierCurveTo(cx,my-uH*0.5,cx+MW*0.09,my-uH*1.2,cx+MW*0.22,my-uH);
-    ctx.bezierCurveTo(cx+MW*0.54,my-uH*0.22+cY*0.5,cx+MW,my+1.8+cY,cx+MW,my+1.8+cY);
-    if (close) { ctx.bezierCurveTo(cx+MW*0.56,my+lH*1.18,cx-MW*0.56,my+lH*1.18,cx-MW,my+1.8+cY); ctx.closePath(); }
-  };
-  ctx.save(); ctx.beginPath(); upper(true); ctx.clip();
-  const uG=ctx.createLinearGradient(cx,my-uH,cx,my+2);
-  uG.addColorStop(0,rga(lCD)); uG.addColorStop(0.4,rga(lC)); uG.addColorStop(1,rga(lCM));
-  ctx.fillStyle=uG; ctx.fillRect(cx-MW-1,my-uH-1,MW*2+2,uH+3);
-  const lG=ctx.createLinearGradient(cx,my,cx,my+lH);
-  lG.addColorStop(0,rga(lCM)); lG.addColorStop(0.4,rga(lCL)); lG.addColorStop(0.7,rga(lC)); lG.addColorStop(1,rga(lCD));
-  ctx.fillStyle=lG; ctx.fillRect(cx-MW-1,my,MW*2+2,lH+2);
-  const lhG=ctx.createRadialGradient(cx,my+lH*0.44,1.5,cx,my+lH*0.44,MW*0.36);
-  lhG.addColorStop(0,"rgba(255,200,178,0.42)"); lhG.addColorStop(0.6,"rgba(255,200,178,0.11)"); lhG.addColorStop(1,"rgba(255,200,178,0)");
-  ctx.fillStyle=lhG; ctx.beginPath(); ctx.ellipse(cx,my+lH*0.44,MW*0.35,lH*0.32,0,0,Math.PI*2); ctx.fill();
-  ctx.restore();
-  ctx.strokeStyle=rga(lCD,0.6); ctx.lineWidth=0.92; ctx.lineCap="round";
-  ctx.beginPath(); ctx.moveTo(cx-MW,my+1.8+cY); ctx.bezierCurveTo(cx-MW*0.24,my-0.4, cx + MW*0.24,my-0.4,cx+MW,my+1.8+cY); ctx.stroke();
-  ctx.strokeStyle=rga(lCD,0.33); ctx.lineWidth=0.6; ctx.beginPath(); upper(false); ctx.stroke();
-  for (const s of [-1,1] as const) {
-    const cG=ctx.createRadialGradient(cx+s*(MW-1),my+1.8+cY,0.5,cx+s*(MW-1),my+1.8+cY,4.2);
-    cG.addColorStop(0,rga(lCD,0.48)); cG.addColorStop(1,rga(lCD,0));
-    ctx.fillStyle=cG; ctx.beginPath(); ctx.ellipse(cx+s*(MW-1),my+1.8+cY,4.2,3.2,0,0,Math.PI*2); ctx.fill();
-  }
+  const MW=21*mw, uH=6.0*upperT, lH=8.5*lowerT, cY=-cornerLift*2.5;
+  const lC=hr(lipColor), lCL=lit(lC,20), lCD=drk(lC,32), lCM=drk(lC,10);
+  const upper=(close=false)=>{
+    ctx.moveTo(cx-MW,my+1.8+cY);
+    // ★上唇の山を完全対称に再計算（C1xとC2xの値をcxを基準に一致させた）
+    ctx.bezierCurveTo(cx-MW*0.54,my-uH*0.22+cY*0.5,cx-MW*0.20,my-uH,cx-MW*0.09,my-uH*1.2);
+    ctx.bezierCurveTo(cx,my-uH*0.5,cx+MW*0.09,my-uH*1.2,cx+MW*0.20,my-uH);
+    ctx.bezierCurveTo(cx+MW*0.54,my-uH*0.22+cY*0.5,cx+MW,my+1.8+cY,cx+MW,my+1.8+cY);
+    if (close) { ctx.bezierCurveTo(cx+MW*0.56,my+lH*1.18,cx-MW*0.56,my+lH*1.18,cx-MW,my+1.8+cY); ctx.closePath(); }
+  };
+  ctx.save(); ctx.beginPath(); upper(true); ctx.clip();
+  const uG=ctx.createLinearGradient(cx,my-uH,cx,my+2);
+  uG.addColorStop(0,rga(lCD)); uG.addColorStop(0.4,rga(lC)); uG.addColorStop(1,rga(lCM));
+  ctx.fillStyle=uG; ctx.fillRect(cx-MW-1,my-uH-1,MW*2+2,uH+3);
+  const lG=ctx.createLinearGradient(cx,my,cx,my+lH);
+  lG.addColorStop(0,rga(lCM)); lG.addColorStop(0.4,rga(lCL)); lG.addColorStop(0.7,rga(lC)); lG.addColorStop(1,rga(lCD));
+  ctx.fillStyle=lG; ctx.fillRect(cx-MW-1,my,MW*2+2,lH+2);
+  const lhG=ctx.createRadialGradient(cx,my+lH*0.44,1.5,cx,my+lH*0.44,MW*0.36);
+  lhG.addColorStop(0,"rgba(255,200,178,0.42)"); lhG.addColorStop(0.6,"rgba(255,200,178,0.11)"); lhG.addColorStop(1,"rgba(255,200,178,0)");
+  ctx.fillStyle=lhG; ctx.beginPath(); ctx.ellipse(cx,my+lH*0.44,MW*0.35,lH*0.32,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle=rga(lCD,0.6); ctx.lineWidth=0.92; ctx.lineCap="round";
+  ctx.beginPath(); ctx.moveTo(cx-MW,my+1.8+cY); ctx.bezierCurveTo(cx-MW*0.24,my-0.4, cx + MW*0.24,my-0.4,cx+MW,my+1.8+cY); ctx.stroke();
+  ctx.strokeStyle=rga(lCD,0.33); ctx.lineWidth=0.6; ctx.beginPath(); upper(false); ctx.stroke();
+  for (const s of [-1,1] as const) {
+    const cG=ctx.createRadialGradient(cx+s*(MW-1),my+1.8+cY,0.5,cx+s*(MW-1),my+1.8+cY,4.2);
+    cG.addColorStop(0,rga(lCD,0.48)); cG.addColorStop(1,rga(lCD,0));
+    ctx.fillStyle=cG; ctx.beginPath(); ctx.ellipse(cx+s*(MW-1),my+1.8+cY,4.2,3.2,0,0,Math.PI*2); ctx.fill();
+  }
 }
 
 type FaceState = {
