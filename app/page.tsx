@@ -381,7 +381,8 @@ export default function Home() {
   const [prev, setPrev] = useState<FaceState|null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [showBigImage, setShowBigImage] = useState(false); // ★大きな画像用
-  
+  const [zoomScale, setZoomScale] = useState(1.5); // ズーム倍率
+
   useEffect(()=>{setIsMounted(true);},[]);
   const s=st;
   const set=<K extends keyof FaceState>(k:K,v:FaceState[K])=>{setPrev(st);setSt(s=>({...s,[k]:v}));};
@@ -495,26 +496,48 @@ export default function Home() {
 
       // ★涙袋（目頭までしっかり塗る版）
       if (st.tearBag>0&&st.tearBagSize>0) {
+        const tbSize = st.tearBagSize;
+        const startX = ex + ew, startY = eyeY_abs + outerY * 0.5;
+        const endX = ex - ew, endY = eyeY_abs + innerY * 0.5;
+
+        // --- 1. まず「カラー」を塗る（範囲を影の線と完全に一致させる） ---
         if (st.tearBagColor !== "skin") {
           const tbC = hr(st.tearBagColor);
-          const tbSize = st.tearBagSize;
           const tbAlpha = st.tearBagColorAlpha;
+          
           ctx.save();
           ctx.beginPath();
-          const startX = ex + ew, startY = eyeY_abs + outerY * 0.5;
-          const endX = ex - ew, endY = eyeY_abs + innerY * 0.5;
+          // ① 目の下のライン
           ctx.moveTo(startX, startY);
           ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76, ex-ew*0.18, eyeY_abs+eh*0.76, endX, endY);
-          ctx.lineTo(endX, endY + tbSize); // 垂直な壁！
-          ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+tbSize*1.6, ex+ew*0.38, eyeY_abs+eh*0.76+tbSize*1.6, startX, startY+tbSize*1.0);
+          
+          // ② 目頭の垂直なつなぎ
+          ctx.lineTo(endX, endY + tbSize); 
+
+          // ③ 涙袋の膨らみライン（★ここを影の線の計算と1ミリもズラさない！）
+          ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+tbSize, ex+ew*0.38, eyeY_abs+eh*0.76+tbSize, startX, startY+tbSize*0.8);
+          
           ctx.closePath();
-          const tbG = ctx.createLinearGradient(ex, eyeY_abs + eh*0.76 + tbSize*1.2, ex, eyeY_abs + eh*0.3);
-          tbG.addColorStop(0, rga(tbC, tbAlpha)); tbG.addColorStop(1, rga(tbC, 0));
-          ctx.fillStyle = tbG; ctx.fill(); ctx.restore();
+          
+          // グラデーション（下から上へ）
+          const gradStartY = eyeY_abs + eh*0.76 + tbSize; 
+          const gradEndY = eyeY_abs + eh*0.3;
+          const tbG = ctx.createLinearGradient(ex, gradStartY, ex, gradEndY);
+          tbG.addColorStop(0, rga(tbC, tbAlpha)); 
+          tbG.addColorStop(1, rga(tbC, 0)); 
+
+          ctx.fillStyle = tbG;
+          ctx.fill();
+          ctx.restore();
         }
-        ctx.strokeStyle=`rgba(28,10,4,${st.tearBagAlpha})`; ctx.lineWidth=0.5+st.tearBagAlpha*0.7; ctx.lineCap="round";
-        ctx.beginPath(); ctx.moveTo(ex+ew, eyeY_abs+outerY*0.5+st.tearBagSize*0.8);
-        ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76+st.tearBagSize, ex-ew*0.18, eyeY_abs+eh*0.76+st.tearBagSize, ex-ew, eyeY_abs+innerY*0.5+st.tearBagSize);
+
+        // --- 2. 最後に「影の線」を上から重ねてフタをする ---
+        ctx.strokeStyle=`rgba(28,10,4,${st.tearBagAlpha})`;
+        ctx.lineWidth=0.5+st.tearBagAlpha*0.7; ctx.lineCap="round";
+        ctx.beginPath();
+        // 下側の境界線をなぞる
+        ctx.moveTo(startX, startY+tbSize*0.8);
+        ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76+tbSize, ex-ew*0.18, eyeY_abs+eh*0.76+tbSize, endX, endY+tbSize);
         ctx.stroke();
       }
 
@@ -705,26 +728,46 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ★大きなプレビュー画面（モーダル）：ここに置く！ */}
+      {/* ★最強ズームモーダル：拡大・移動ができる！ */}
       {isMounted && showBigImage && (
         <div 
-          onClick={() => setShowBigImage(false)}
           style={{
             position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-            background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center",
-            justifyContent: "center", zIndex: 9999, cursor: "zoom-out"
+            background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center", zIndex: 9999
           }}
         >
-          <img 
-            src={canvasRef.current?.toDataURL("image/png")} 
-            alt="Preview Big" 
-            style={{ maxWidth: "95%", maxHeight: "95%", objectFit: "contain", borderRadius: "6px" }}
-          />
+          {/* 上に操作ボタン */}
+          <div style={{ position: "absolute", top: "20px", display: "flex", gap: "15px", zIndex: 10000 }}>
+            <button onClick={() => setZoomScale(s => Math.max(1, s - 0.5))} style={{ padding: "10px 20px", borderRadius: "20px", border: "1px solid #fff", background: "none", color: "#fff" }}>➖ 縮小</button>
+            <button onClick={() => setZoomScale(s => Math.min(4, s + 0.5))} style={{ padding: "10px 20px", borderRadius: "20px", border: "1px solid #fff", background: "none", color: "#fff" }}>➕ 拡大</button>
+            <button onClick={() => { setShowBigImage(false); setZoomScale(1.5); }} style={{ padding: "10px 20px", borderRadius: "20px", border: "none", background: "#c8a97e", color: "#000", fontWeight: "bold" }}>❌ 閉じる</button>
+          </div>
+
+          {/* 画像を表示するエリア（はみ出た分をスクロールできる） */}
+          <div style={{
+            width: "100%", height: "100%", overflow: "auto", 
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "move"
+          }}>
+            <img 
+              src={canvasRef.current?.toDataURL("image/png")} 
+              alt="Zoomed Portrait" 
+              style={{ 
+                width: `${300 * zoomScale}px`, // ズーム倍率に合わせて横幅を変える
+                height: "auto",
+                transition: "width 0.2s ease-out", // ズーム時の動きを滑らかに
+                boxShadow: "0 0 50px rgba(0,0,0,0.5)",
+                borderRadius: "4px"
+              }}
+            />
+          </div>
+          
+          <div style={{ position: "absolute", bottom: "30px", color: "#666", fontSize: "12px" }}>
+            指で動かして拡大したい場所を見てね
+          </div>
         </div>
       )}
-    </div>
-  );
-}
 
 const HAIR_COLORS = [
   "#060402","#0e0804","#160c04","#1e1006","#2c1608","#3c1e0c",
