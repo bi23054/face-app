@@ -569,6 +569,7 @@ export default function Home() {
       ctx.fillStyle=gCheek; ctx.beginPath(); ctx.ellipse(chX,chY,r,r*0.65,0,0,Math.PI*2); ctx.fill();
     }
     ctx.restore();
+  }
 
     drawFaceShadow(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW,sk,shadow);
     drawEars(ctx,cx,ty,fw,mH,sk,st.earSize,st.earY,eraW,faceW,fH);
