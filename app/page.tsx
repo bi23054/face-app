@@ -598,7 +598,7 @@ export default function Home() {
           ref={canvasRef} 
           width={300} 
           height={420} 
-          onClick={() => setShowBigImage(true)} // ★クリックで大きく表示
+          onClick={() => setShowBigImage(true)} 
           style={{
             borderRadius:"6px",
             background:"#f9f6f2",
@@ -728,46 +728,89 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ★最強ズームモーダル：拡大・移動ができる！ */}
+      {/* ★最強ズームモーダル */}
       {isMounted && showBigImage && (
-        <div 
-          style={{
-            position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-            background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center", zIndex: 9999
-          }}
-        >
-          {/* 上に操作ボタン */}
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
           <div style={{ position: "absolute", top: "20px", display: "flex", gap: "15px", zIndex: 10000 }}>
             <button onClick={() => setZoomScale(s => Math.max(1, s - 0.5))} style={{ padding: "10px 20px", borderRadius: "20px", border: "1px solid #fff", background: "none", color: "#fff" }}>➖ 縮小</button>
             <button onClick={() => setZoomScale(s => Math.min(4, s + 0.5))} style={{ padding: "10px 20px", borderRadius: "20px", border: "1px solid #fff", background: "none", color: "#fff" }}>➕ 拡大</button>
             <button onClick={() => { setShowBigImage(false); setZoomScale(1.5); }} style={{ padding: "10px 20px", borderRadius: "20px", border: "none", background: "#c8a97e", color: "#000", fontWeight: "bold" }}>❌ 閉じる</button>
           </div>
-
-          {/* 画像を表示するエリア（はみ出た分をスクロールできる） */}
-          <div style={{
-            width: "100%", height: "100%", overflow: "auto", 
-            display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "move"
-          }}>
-            <img 
-              src={canvasRef.current?.toDataURL("image/png")} 
-              alt="Zoomed Portrait" 
-              style={{ 
-                width: `${300 * zoomScale}px`, // ズーム倍率に合わせて横幅を変える
-                height: "auto",
-                transition: "width 0.2s ease-out", // ズーム時の動きを滑らかに
-                boxShadow: "0 0 50px rgba(0,0,0,0.5)",
-                borderRadius: "4px"
-              }}
-            />
+          <div style={{ width: "100%", height: "100%", overflow: "auto", display: "flex", alignItems: "center", justifyContent: "center", cursor: "move" }}>
+            <img src={canvasRef.current?.toDataURL("image/png")} alt="Zoomed" style={{ width: `${300 * zoomScale}px`, height: "auto", transition: "width 0.2s ease-out", boxShadow: "0 0 50px rgba(0,0,0,0.5)", borderRadius: "4px" }} />
           </div>
-          
-          <div style={{ position: "absolute", bottom: "30px", color: "#666", fontSize: "12px" }}>
-            指で動かして拡大したい場所を見てね
-          </div>
+          <div style={{ position: "absolute", bottom: "30px", color: "#666", fontSize: "12px" }}>指で動かして拡大したい場所を見てね</div>
         </div>
       )}
+    </div>
+  );
+}
+
+// 部品関数
+function Sec({title,children}:{title:string;children:React.ReactNode}) {
+  return (
+    <div style={{background:"#1a1714",borderRadius:"6px",padding:"10px 12px",border:"1px solid #252018",marginBottom:"8px"}}>
+      <div style={{fontSize:"10px",fontWeight:"bold",letterSpacing:"2px",color:"#c8a97e",borderLeft:"3px solid #c8a97e",paddingLeft:"8px",marginBottom:"10px",textTransform:"uppercase"}}>{title}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:"7px"}}>{children}</div>
+    </div>
+  );
+}
+function Sep() { return <div style={{borderTop:"1px solid #252018",margin:"2px 0"}} />; }
+function Sub({label}:{label:string}) { return <div style={{fontSize:"10px",color:"#6a6258",marginTop:"2px"}}>{label}</div>; }
+function Ind({children}:{children:React.ReactNode}) { return <div style={{display:"flex",flexDirection:"column",gap:"5px",paddingLeft:"8px",borderLeft:"2px solid #252018"}}>{children}</div>; }
+function Sld({label,v,mn,mx,st,fn,leftLabel,rightLabel}:{label:string;v:number;mn:number;mx:number;st:number;fn:(n:number)=>void;leftLabel?:string;rightLabel?:string;}) {
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+      <div style={{width:"78px",fontSize:"10px",color:"#9e9286",flexShrink:0}}>{label}</div>
+      {leftLabel&&<span style={{fontSize:"9px",color:"#6a6258"}}>{leftLabel}</span>}
+      <input type="range" min={mn} max={mx} step={st} value={v} onChange={e=>fn(Number(e.target.value))} style={{flex:1,accentColor:"#c8a97e",cursor:"pointer"}} />
+      {rightLabel&&<span style={{fontSize:"9px",color:"#6a6258"}}>{rightLabel}</span>}
+      <div style={{width:"28px",fontSize:"9px",color:"#6e6258",textAlign:"right"}}>{Math.abs(v)<10&&st<1?v.toFixed(2):Math.round(v)}</div>
+    </div>
+  );
+}
+function Tabs({label,v,opts,fn}:{label:string;v:number;opts:string[];fn:(n:number)=>void}) {
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+      <div style={{width:"78px",fontSize:"10px",color:"#9e9286",flexShrink:0}}>{label}</div>
+      <div style={{display:"flex",gap:"3px",flexWrap:"wrap"}}>
+        {opts.map((o,i)=>(
+          <button key={i} onClick={()=>fn(i)} style={{padding:"2px 7px",fontSize:"9px",borderRadius:"10px",border:"none",cursor:"pointer",background:v===i?"#c8a97e":"#2a2520",color:v===i?"#18150f":"#5a5248"}}>{o}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+function ColorSwatch({label,v,list,fn}:{label:string;v:string;list:string[];fn:(s:string)=>void}) {
+  return (
+    <div style={{display:"flex",alignItems:"flex-start",gap:"6px"}}>
+      <div style={{width:"78px",fontSize:"10px",color:"#9e9286",flexShrink:0,paddingTop:"2px"}}>{label}</div>
+      <div style={{display:"flex",gap:"3px",flexWrap:"wrap",maxWidth:"220px"}}>
+        {list.map(c=>(
+          <div key={c} onClick={()=>fn(c)} title={c} style={{width:"15px",height:"15px",borderRadius:"50%",background:c,cursor:"pointer",border:`2px solid ${v===c?"#c8a97e":"transparent"}`,boxSizing:"border-box",flexShrink:0}} />
+        ))}
+      </div>
+    </div>
+  );
+}
+function TearBagColorSwatch({label,v,fn}:{label:string;v:string;fn:(s:string)=>void}) {
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+      <div style={{width:"78px",fontSize:"10px",color:"#9e9286",flexShrink:0}}>{label}</div>
+      <div style={{display:"flex",gap:"3px",flexWrap:"wrap",maxWidth:"220px"}}>
+        <div onClick={()=>fn("skin")} title="スキン（なし）"
+          style={{width:"15px",height:"15px",borderRadius:"50%",cursor:"pointer",
+            border:`2px solid ${v==="skin"?"#c8a97e":"#3a3530"}`,boxSizing:"border-box",flexShrink:0,
+            background:"linear-gradient(135deg,#f0c0a0 50%,#1a1714 50%)"}} />
+        {TEARBAG_COLORS.filter(c=>c!=="skin").map(c=>(
+          <div key={c} onClick={()=>fn(c)} title={c}
+            style={{width:"15px",height:"15px",borderRadius:"50%",background:c,cursor:"pointer",
+              border:`2px solid ${v===c?"#c8a97e":"transparent"}`,boxSizing:"border-box",flexShrink:0}} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const HAIR_COLORS = [
   "#060402","#0e0804","#160c04","#1e1006","#2c1608","#3c1e0c",
