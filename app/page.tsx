@@ -560,13 +560,38 @@ export default function Home() {
 
   },[st,isMounted]);
 
-  return (
-    <div style={{display:"flex",height:"100vh",overflow:"hidden",background:"#edeae5",fontFamily:"'Georgia',serif"}}>
-      <div style={{flex:"1",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 20px",background:"#f9f6f2",borderRight:"1px solid #ddd"}}>
+return (
+    <div style={{
+      display: "flex",
+      flexDirection: (isMounted && window.innerWidth < 768) ? "column" : "row", // スマホなら縦、PCなら横
+      height: "100vh",
+      overflow: (isMounted && window.innerWidth < 768) ? "auto" : "hidden", // スマホならスクロール可能に
+      background: "#edeae5",
+      fontFamily: "'Georgia',serif"
+    }}>
+      {/* 左（上）：キャンバスエリア */}
+      <div style={{
+        flex: (isMounted && window.innerWidth < 768) ? "none" : "1",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "32px 20px",
+        background: "#f9f6f2",
+        borderRight: (isMounted && window.innerWidth < 768) ? "none" : "1px solid #ddd",
+        borderBottom: (isMounted && window.innerWidth < 768) ? "1px solid #ddd" : "none"
+      }}>
         <div style={{fontSize:"10px",letterSpacing:"4px",color:"#aaa",textTransform:"uppercase",marginBottom:"12px"}}>Portrait Studio</div>
-        <canvas ref={canvasRef} width={300} height={420} style={{borderRadius:"6px",background:"#f9f6f2",boxShadow:"0 10px 50px rgba(0,0,0,0.15)"}} />
+        
+        {/* キャンバスがスマホからはみ出さないように設定 */}
+        <canvas ref={canvasRef} width={300} height={420} style={{
+          borderRadius:"6px",
+          background:"#f9f6f2",
+          boxShadow:"0 10px 50px rgba(0,0,0,0.15)",
+          maxWidth: "100%", 
+          height: "auto"
+        }} />
 
-        {/* ── ここだけ修正：isMounted後にのみレンダリングしてSSR/CSRのmismatchを防ぐ ── */}
         <div style={{display:"flex",gap:"10px",marginTop:"20px",minHeight:"37px"}}>
           {isMounted && (
             <>
@@ -574,19 +599,19 @@ export default function Home() {
                 onClick={undo}
                 disabled={!prev}
                 style={{
-                  padding:"8px 22px",fontSize:"11px",borderRadius:"20px",border:"none",
+                  padding:"10px 22px",fontSize:"12px",borderRadius:"20px",border:"none",
                   cursor:prev?"pointer":"default",
                   background:prev?"#c8a97e":"#2a2520",
                   color:prev?"#18150f":"#3a3530",
                   letterSpacing:"1.5px",fontWeight:"bold"
                 }}
               >
-                ↩ １個前に戻る
+                ↩ 戻る
               </button>
               <button
                 onClick={saveImage}
                 style={{
-                  padding:"8px 22px",fontSize:"11px",borderRadius:"20px",border:"none",
+                  padding:"10px 22px",fontSize:"12px",borderRadius:"20px",border:"none",
                   cursor:"pointer",background:"#c8a97e",color:"#18150f",
                   letterSpacing:"1.5px",fontWeight:"bold"
                 }}
@@ -598,11 +623,18 @@ export default function Home() {
         </div>
       </div>
 
-      <div style={{flex:"1.2",background:"#0d0b09",color:"#e2d9cc",padding:"24px 20px",overflowY:"auto",height:"100%"}}>
+      {/* 右（下）：操作パネルエリア */}
+      <div style={{
+        flex: "1.2",
+        background: "#0d0b09",
+        color: "#e2d9cc",
+        padding: "24px 20px",
+        overflowY: "auto",
+        height: (isMounted && window.innerWidth < 768) ? "auto" : "100%"
+      }}>
         <div style={{marginBottom:"20px",paddingLeft:"12px"}}>
           <h2 style={{fontSize:"14px",letterSpacing:"6px",color:"#c8a97e",margin:0}}>DESIGNER</h2>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:"8px",maxWidth:"480px"}}>
 
           <Sec title="顔">
             <Sld label="横幅"       v={s.faceW}     mn={0.72} mx={1.3}  st={0.02} fn={v=>set("faceW",v)} />
@@ -704,7 +736,7 @@ export default function Home() {
             <ColorSwatch label="チーク色" v={s.cheekColor} fn={v=>set("cheekColor",v)} list={CHEEK_COLORS} />
           </Sec>
 
-        </div>
+        
       </div>
     </div>
   );
