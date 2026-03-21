@@ -100,92 +100,28 @@ function drawEars(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
 
 function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, style:number, vol:number, mainColor:string) {
   const sr=fw*vol*1.10, hy=ty-80;
-  const hc=hr(mainColor), hcD=drk(hc,38), hcL=lit(hc,14), hcM=drk(hc,18);
-  const fillHair=()=>{
-    const g=ctx.createLinearGradient(cx-sr*0.7,hy,cx+sr*0.7,hy+80);
-    g.addColorStop(0,rga(hcD)); g.addColorStop(0.3,rga(hcM)); g.addColorStop(0.55,rga(hcL)); g.addColorStop(0.75,rga(hcM)); g.addColorStop(1,rga(hcD));
-    ctx.fillStyle=g; ctx.fill();
-  };
-  const shortHead=()=>{
-    ctx.beginPath(); ctx.moveTo(cx,hy-6);
-    ctx.bezierCurveTo(cx-sr*0.42,hy-8,cx-sr*0.88,hy+10,cx-sr*0.94,ty+28);
-    ctx.bezierCurveTo(cx-sr*0.98,ty+52,cx-sr*0.96,ty+72,cx-sr*0.84,ty+90);
-    ctx.bezierCurveTo(cx-sr*0.60,ty+102,cx-sr*0.28,ty+108,cx,ty+108);
-    ctx.bezierCurveTo(cx+sr*0.28,ty+108,cx+sr*0.60,ty+102,cx+sr*0.84,ty+90);
-    ctx.bezierCurveTo(cx+sr*0.96,ty+72,cx+sr*0.98,ty+52,cx+sr*0.94,ty+28);
-    ctx.bezierCurveTo(cx+sr*0.88,hy+10,cx+sr*0.42,hy-8,cx,hy-6);
-    ctx.closePath(); fillHair();
-  };
-  if (style===0) { shortHead(); }
-  else if (style===1) {
-    ctx.beginPath(); ctx.moveTo(cx,hy-6);
-    ctx.bezierCurveTo(cx-sr*0.42,hy-8,cx-sr*0.88,hy+10,cx-sr*0.95,ty+30);
-    ctx.bezierCurveTo(cx-sr*1.00,ty+58,cx-sr*1.04,ty+88,cx-sr*1.02,ty+112);
-    ctx.bezierCurveTo(cx-sr*0.98,ty+132,cx-sr*0.82,ty+148,cx-sr*0.58,ty+152);
-    ctx.bezierCurveTo(cx-sr*0.28,ty+155,cx,ty+156,cx,ty+156);
-    ctx.bezierCurveTo(cx,ty+156,cx+sr*0.28,ty+155,cx+sr*0.58,ty+152);
-    ctx.bezierCurveTo(cx+sr*0.82,ty+148,cx+sr*0.98,ty+132,cx+sr*1.02,ty+112);
-    ctx.bezierCurveTo(cx+sr*1.04,ty+88,cx+sr*1.00,ty+58,cx+sr*0.95,ty+30);
-    ctx.bezierCurveTo(cx+sr*0.88,hy+10,cx+sr*0.42,hy-8,cx,hy-6);
-    ctx.closePath(); fillHair();
-  } else if (style===2) {
-    ctx.beginPath(); ctx.moveTo(cx,hy-6);
-    ctx.bezierCurveTo(cx-sr*0.42,hy-8,cx-sr*0.88,hy+10,cx-sr*0.95,ty+30);
-    ctx.bezierCurveTo(cx-sr*1.02,ty+62,cx-sr*1.06,ty+105,cx-sr*1.06,ty+148);
-    ctx.bezierCurveTo(cx-sr*1.04,ty+195,cx-sr*0.94,ty+248,cx-sr*0.72,ty+278);
-    ctx.bezierCurveTo(cx-sr*0.46,ty+300,cx-sr*0.18,ty+308,cx,ty+308);
-    ctx.bezierCurveTo(cx+sr*0.18,ty+308,cx+sr*0.46,ty+300,cx+sr*0.72,ty+278);
-    ctx.bezierCurveTo(cx+sr*0.94,ty+248,cx+sr*1.04,ty+195,cx+sr*1.06,ty+148);
-    ctx.bezierCurveTo(cx+sr*1.06,ty+105,cx+sr*1.02,ty+62,cx+sr*0.95,ty+30);
-    ctx.bezierCurveTo(cx+sr*0.88,hy+10,cx+sr*0.42,hy-8,cx,hy-6);
-    ctx.closePath(); fillHair();
-  } else if (style===3) {
-    shortHead();
-    ctx.beginPath(); ctx.moveTo(cx-sr*0.24,ty+104);
-    ctx.bezierCurveTo(cx-sr*0.30,ty+145,cx-sr*0.34,ty+205,cx-sr*0.16,ty+268);
-    ctx.bezierCurveTo(cx-sr*0.04,ty+295,cx+sr*0.04,ty+295,cx+sr*0.16,ty+268);
-    ctx.bezierCurveTo(cx+sr*0.34,ty+205,cx+sr*0.30,ty+145,cx+sr*0.24,ty+104);
-    ctx.closePath(); fillHair();
-  } else if (style===4) {
-    ctx.beginPath(); ctx.moveTo(cx,hy-4);
-    ctx.bezierCurveTo(cx-sr*0.40,hy-6,cx-sr*0.84,hy+8,cx-sr*0.90,ty+20);
-    ctx.bezierCurveTo(cx-sr*0.92,ty+40,cx-sr*0.90,ty+58,cx-sr*0.80,ty+72);
-    ctx.bezierCurveTo(cx-sr*0.58,ty+82,cx-sr*0.26,ty+86,cx,ty+86);
-    ctx.bezierCurveTo(cx+sr*0.26,ty+86,cx+sr*0.58,ty+82,cx+sr*0.80,ty+72);
-    ctx.bezierCurveTo(cx+sr*0.90,ty+58,cx+sr*0.92,ty+40,cx+sr*0.90,ty+20);
-    ctx.bezierCurveTo(cx+sr*0.84,hy+8,cx+sr*0.40,hy-6,cx,hy-4);
-    ctx.closePath(); fillHair();
-  } else if (style===5) { shortHead(); }
-  else if (style===6) {
-    shortHead();
-    for (const s of [-1,1] as const) {
-      ctx.beginPath(); ctx.moveTo(cx+s*sr*0.60,ty+90);
-      ctx.bezierCurveTo(cx+s*sr*0.88,ty+105,cx+s*sr*1.08,ty+155,cx+s*sr*1.02,ty+218);
-      ctx.bezierCurveTo(cx+s*sr*0.96,ty+258,cx+s*sr*0.80,ty+278,cx+s*sr*0.64,ty+282);
-      ctx.bezierCurveTo(cx+s*sr*0.44,ty+278,cx+s*sr*0.36,ty+258,cx+s*sr*0.40,ty+218);
-      ctx.bezierCurveTo(cx+s*sr*0.44,ty+155,cx+s*sr*0.50,ty+105,cx+s*sr*0.40,ty+90);
-      ctx.closePath(); fillHair();
-    }
-  } else {
-    shortHead();
-    ctx.beginPath(); ctx.moveTo(cx-sr*0.24,ty+104);
-    ctx.bezierCurveTo(cx-sr*0.30,ty+145,cx-sr*0.34,ty+205,cx-sr*0.16,ty+268);
-    ctx.bezierCurveTo(cx-sr*0.04,ty+295,cx+sr*0.04,ty+295,cx+sr*0.16,ty+268);
-    ctx.bezierCurveTo(cx+sr*0.34,ty+205,cx+sr*0.30,ty+145,cx+sr*0.24,ty+104);
-    ctx.closePath(); fillHair();
+  const hc=hr(mainColor), hcD=drk(hc,38);
+  ctx.fillStyle=rga(hcD);
+  // 頭の形
+  ctx.beginPath(); ctx.moveTo(cx,hy-6);
+  ctx.bezierCurveTo(cx-sr*0.42,hy-8,cx-sr*0.88,hy+10,cx-sr*0.94,ty+28);
+  ctx.bezierCurveTo(cx-sr*0.98,ty+52,cx-sr*0.96,ty+72,cx-sr*0.84,ty+90);
+  ctx.bezierCurveTo(cx-sr*0.60,ty+102,cx-sr*0.28,ty+108,cx,ty+108);
+  ctx.bezierCurveTo(cx+sr*0.28,ty+108,cx+sr*0.60,ty+102,cx+sr*0.84,ty+90);
+  ctx.bezierCurveTo(cx+sr*0.96,ty+72,cx+sr*0.98,ty+52,cx+sr*0.94,ty+28);
+  ctx.bezierCurveTo(cx+sr*0.88,hy+10,cx+sr*0.42,hy-8,cx,hy-6);
+  ctx.closePath(); ctx.fill();
+
+  // ★ここがポイント：毛流れの線
+  ctx.save(); ctx.strokeStyle=rga(hcD,0.2); ctx.lineWidth=1;
+  for(let i=0; i<12; i++) {
+    const tx = cx - sr*0.8 + (i/11)*sr*1.6;
+    ctx.beginPath(); ctx.moveTo(tx, hy+20); ctx.lineTo(tx, hy+100); ctx.stroke();
   }
-  ctx.save();
-  ctx.strokeStyle=rga(hcD,0.18); ctx.lineCap="round";
-  const nLines=style<=0?3:style<=2?5:4;
-  for (let i=0;i<nLines;i++) {
-    const t=(i+0.8)/(nLines+0.5), bx=cx-sr*0.62+t*sr*1.24;
-    const endY=style===0?ty+88:style===1?ty+145:style===2?ty+260:ty+100;
-    ctx.lineWidth=1.0+i%2*0.4;
-    ctx.beginPath(); ctx.moveTo(bx,hy+20); ctx.bezierCurveTo(bx+sr*0.03,ty+40,bx-sr*0.02,ty+70,bx+sr*0.01,endY); ctx.stroke();
-  }
-  const shine=ctx.createRadialGradient(cx-sr*0.10,hy+16,2,cx,hy+28,sr*0.48);
-  shine.addColorStop(0,"rgba(255,255,255,0.24)"); shine.addColorStop(0.5,"rgba(255,255,255,0.07)"); shine.addColorStop(1,"rgba(255,255,255,0)");
-  ctx.fillStyle=shine; ctx.beginPath(); ctx.ellipse(cx-sr*0.06,hy+24,sr*0.36,20,0.12,0,Math.PI*2); ctx.fill();
+  // ★天使の輪ハイライト
+  const shine = ctx.createRadialGradient(cx, hy+30, 0, cx, hy+30, sr);
+  shine.addColorStop(0, "rgba(255,255,255,0.1)"); shine.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle=shine; ctx.fillRect(cx-sr, hy+10, sr*2, 40);
   ctx.restore();
 }
 
@@ -424,6 +360,20 @@ export default function Home() {
     const g=ctx.createRadialGradient(cx,faceMidY,4,cx,faceMidY,fw*1.5);
     g.addColorStop(0,sk.hi); g.addColorStop(0.28,sk.base); g.addColorStop(0.70,sk.mid); g.addColorStop(1,sk.dark);
     ctx.fillStyle=g; ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.fill();
+
+    // --- 3. アイシャドウ（顔ベースの直後に塗る！） ---
+    const esC = hr(st.eyeShadowColor || "#a06040");
+    for(const sv of [-1,1]){
+      const ex = cx + sv * (40 + st.eyeDist);
+      const ey = ty + fH + mH * 0.38 - st.eyeVert;
+      const gShadow = ctx.createRadialGradient(ex, ey-5, 0, ex, ey-5, 25);
+      gShadow.addColorStop(0, rga(esC, 0.3)); // 30%くらいの濃さ
+      gShadow.addColorStop(1, rga(esC, 0));
+      ctx.fillStyle = gShadow;
+      ctx.beginPath();
+      ctx.ellipse(ex, ey-5, 25, 15, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
 
     const cColor=hr(st.cheekColor);
     ctx.save(); ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.clip();
