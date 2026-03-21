@@ -380,6 +380,7 @@ export default function Home() {
   const [st, setSt] = useState<FaceState>(DEFAULT_STATE);
   const [prev, setPrev] = useState<FaceState|null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [showBigImage, setShowBigImage] = useState(false);
   useEffect(()=>{setIsMounted(true);},[]);
   const s=st;
   const set=<K extends keyof FaceState>(k:K,v:FaceState[K])=>{setPrev(st);setSt(s=>({...s,[k]:v}));};
@@ -503,54 +504,52 @@ export default function Home() {
       }
 
 if (st.tearBag>0&&st.tearBagSize>0) {
-        // --- 1. 涙袋の「色」を塗る（サイズに合わせて形が変化する！） ---
         if (st.tearBagColor !== "skin") {
           const tbC = hr(st.tearBagColor);
-          const tbSize = st.tearBagSize; // ユーザーが選んだサイズ
+          const tbSize = st.tearBagSize;
+          const tbAlpha = st.tearBagColorAlpha;
+          
           ctx.save();
           ctx.beginPath();
-          // 【上端】目の下のライン
-          ctx.moveTo(ex+ew, eyeY_abs+outerY*0.5);
-          ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76, ex-ew*0.18, eyeY_abs+eh*0.76, ex-ew, eyeY_abs+innerY*0.5);
-          // 【下端】涙袋のサイズに合わせてカーブも膨らむように計算
-          ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+tbSize*1.6, ex+ew*0.38, eyeY_abs+eh*0.76+tbSize*1.6, ex+ew, eyeY_abs+outerY*0.5+tbSize*1.3);
+          
+          const startX = ex + ew; // 目尻
+          const startY = eyeY_abs + outerY * 0.5;
+          const endX = ex - ew;   // 目頭
+          const endY = eyeY_abs + innerY * 0.5;
+
+          // ① 目の下のライン
+          ctx.moveTo(startX, startY);
+          ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76, ex-ew*0.18, eyeY_abs+eh*0.76, endX, endY);
+          
+          // ② 【ここが重要！】目頭の「縦の隙間」を強制的に埋める
+          // 目頭の端っこで、目のラインから真下の涙袋の線まで「垂直に」線を引く
+          ctx.lineTo(endX, endY + tbSize); 
+
+          // ③ 涙袋の膨らみライン（下側）
+          // 制御点を調整して、目頭側のボリュームを維持したまま目尻へ繋ぐ
+          ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+tbSize*1.6, ex+ew*0.38, eyeY_abs+eh*0.76+tbSize*1.6, startX, startY+tbSize*1.0);
           ctx.closePath();
           
-          // グラデーションの終点もサイズに連動
-          const tbG = ctx.createLinearGradient(ex, eyeY_abs+eh*0.5, ex, eyeY_abs+eh*0.76+tbSize);
-          tbG.addColorStop(0, rga(tbC, st.tearBagColorAlpha)); // 濃さ（透明度）も反映
-          tbG.addColorStop(1, rga(tbC, 0));
+          // グラデーション（下から上へ）
+          const gradStartY = eyeY_abs + eh*0.76 + tbSize*1.2;
+          const gradEndY = eyeY_abs + eh*0.3; // 目の際までしっかり色が届くように調整
           
+          const tbG = ctx.createLinearGradient(ex, gradStartY, ex, gradEndY);
+          tbG.addColorStop(0, rga(tbC, tbAlpha)); 
+          tbG.addColorStop(1, rga(tbC, 0)); 
+
           ctx.fillStyle = tbG;
           ctx.fill();
           ctx.restore();
         }
 
-        // --- 2. 涙袋の「影の線」を引く ---
+        // --- 影の線 ---
         ctx.strokeStyle=`rgba(28,10,4,${st.tearBagAlpha})`;
-        ctx.lineWidth=0.6+st.tearBagAlpha*0.8; ctx.lineCap="round";
+        ctx.lineWidth=0.5+st.tearBagAlpha*0.7; ctx.lineCap="round";
         ctx.beginPath();
-        ctx.moveTo(ex+ew,eyeY_abs+outerY*0.5+st.tearBagSize);
-        ctx.bezierCurveTo(ex+ew*0.38,eyeY_abs+eh*0.76+st.tearBagSize,ex-ew*0.18,eyeY_abs+eh*0.76+st.tearBagSize,ex-ew,eyeY_abs+innerY*0.5+st.tearBagSize);
+        ctx.moveTo(ex+ew, eyeY_abs+outerY*0.5+st.tearBagSize*0.8);
+        ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76+st.tearBagSize, ex-ew*0.18, eyeY_abs+eh*0.76+st.tearBagSize, ex-ew, eyeY_abs+innerY*0.5+st.tearBagSize);
         ctx.stroke();
-      }
-
-      const lashN=14;
-      for (let i=0;i<lashN;i++) {
-        const rawT=i/(lashN-1), zoneT=sv===-1?rawT:1-rawT;
-        let lenM:number, densM:number;
-        if (zoneT<0.33){const f=zoneT/0.33;lenM=st.lashLenI*(1-f)+st.lashLenC*f;densM=st.lashDensI*(1-f)+st.lashDensC*f;}
-        else if (zoneT<0.67){const f=(zoneT-0.33)/0.34;lenM=st.lashLenC*(1-f)+st.lashLenO*f;densM=st.lashDensC*(1-f)+st.lashDensO*f;}
-        else{lenM=st.lashLenO;densM=st.lashDensO;}
-        if (densM<0.12) continue;
-        const lx=ex-ew+rawT*ew*2,t3=rawT,mt=1-t3;
-        const p0y=eyeY_abs+innerY*0.5,c1y=eyeY_abs-eh*1.12,c2y=eyeY_abs-eh*1.26,p3y=eyeY_abs+outerY*0.5;
-        const ly=mt*mt*mt*p0y+3*mt*mt*t3*c1y+3*mt*t3*t3*c2y+t3*t3*t3*p3y;
-        const baseLen=(2.0+Math.sin(rawT*Math.PI)*3.0)*st.eyeH,len=baseLen*lenM,spread=(rawT-0.5)*0.52,ang=-Math.PI/2+spread;
-        ctx.strokeStyle=`rgba(8,3,1,${Math.min(0.9,(0.52+Math.sin(rawT*Math.PI)*0.3))*densM})`;
-        ctx.lineWidth=(0.55+Math.sin(rawT*Math.PI)*0.5)*Math.max(0.3,densM); ctx.lineCap="round";
-        ctx.beginPath(); ctx.moveTo(lx,ly);
-        ctx.bezierCurveTo(lx+Math.cos(ang-0.08)*len*0.28,ly+Math.sin(ang-0.08)*len*0.42,lx+Math.cos(ang+0.18)*len*0.58,ly+Math.sin(ang+0.18)*len*0.78,lx+Math.cos(ang+0.30)*len*0.66,ly+Math.sin(ang+0.30)*len); ctx.stroke();
       }
     }
 
@@ -588,14 +587,20 @@ return (
       }}>
         <div style={{fontSize:"8px",letterSpacing:"3px",color:"#ccc",textTransform:"uppercase",marginBottom:"6px"}}>Preview</div>
         
-        {/* キャンバスをスマホなら少し小さめに見せる（65%設定） */}
-        <canvas ref={canvasRef} width={300} height={420} style={{
-          borderRadius:"6px",
-          background:"#f9f6f2",
-          boxShadow:"0 5px 25px rgba(0,0,0,0.1)",
-          maxWidth: (isMounted && window.innerWidth < 768) ? "65%" : "100%", // ★ここ！スマホなら65%に
-          height: "auto"
-        }} />
+        {/* キャンバスの設定 */}
+<canvas 
+  ref={canvasRef} 
+  width={300} 
+  height={420} 
+  onClick={() => setShowBigImage(true)} // ★クリックしたらモーダルを開く
+  style={{
+    borderRadius:"6px",
+    background:"#f9f6f2",
+    boxShadow:"0 5px 25px rgba(0,0,0,0.1)",
+    maxWidth: (isMounted && window.innerWidth < 768) ? "65%" : "100%", 
+    height: "auto",
+    cursor: "zoom-in" // ★カーソルを虫眼鏡マークに
+}} />
 
         <div style={{display:"flex",gap:"10px",marginTop:"10px",minHeight:"37px"}}>
           {isMounted && (
@@ -856,4 +861,35 @@ function TearBagColorSwatch({label,v,fn}:{label:string;v:string;fn:(s:string)=>v
       </div>
     </div>
   );
+
+  {isMounted && showBigImage && (
+      <div 
+        onClick={() => setShowBigImage(false)} // 画面のどこをクリックしても閉じる
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "rgba(0,0,0,0.9)", // 真っ黒背景
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999, // 一番手前に出す
+          cursor: "zoom-out"
+        }}
+      >
+        <img 
+          src={canvasRef.current?.toDataURL("image/png")} // キャンバスの中身を画像化して表示
+          alt="Preview Big" 
+          style={{
+            maxWidth: "95%",
+            maxHeight: "95%",
+            objectFit: "contain",
+            boxShadow: "0 10px 100px rgba(0,0,0,0.5)",
+            borderRadius: "6px"
+          }}
+        />
+      </div>
+    )}
 }
