@@ -100,25 +100,32 @@ function drawEars(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
 
 function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, fH:number, mH:number, cH:number, eraW:number, style:number, vol:number, mainColor:string) {
   const era = Math.max(-0.5, Math.min(0.4, eraW));
-  const foreheadX = fw * 0.92;      // 額の幅
-  const eraX = fw * (0.92 + era);   // 頬の最大幅
+  const foreheadX = fw * 0.92;
+  const eraX = fw * (0.92 + era);
   
-  // 頭頂部の高さ（tyから少し上）と、髪の広がり（eraX基準）
   const hy = ty - (fH * 0.15); 
   const sr = eraX * vol * 1.05;
 
   const hc = hr(mainColor);
   const hcD = drk(hc, 38);
 
+  // --- ★ここからエラー箇所：関数の書き方を修正 ---
+  const head = () => {
+    ctx.beginPath(); 
+    ctx.moveTo(cx, hy - 8);
+    ctx.bezierCurveTo(cx - sr * 0.38, hy - 10, cx - sr * 0.86, hy + 9, cx - sr * 0.93, ty + 26);
+    ctx.bezierCurveTo(cx - sr * 0.97, ty + 50, cx - sr * 0.95, ty + 70, cx - sr * 0.84, ty + 92);
+    ctx.bezierCurveTo(cx - sr * 0.58, ty + 104, cx - sr * 0.26, ty + 110, cx, ty + 110);
+    ctx.bezierCurveTo(cx + sr * 0.26, ty + 110, cx + sr * 0.58, ty + 104, cx + sr * 0.84, ty + 92);
+    ctx.bezierCurveTo(cx + sr * 0.95, ty + 70, cx + sr * 0.97, ty + 50, cx + sr * 0.93, ty + 26);
+    ctx.bezierCurveTo(cx + sr * 0.86, hy + 9, cx + sr * 0.38, hy - 10, cx, hy - 8);
+    ctx.closePath();
+  };
+  // --- ★ここまで ---
+
   ctx.save();
   ctx.fillStyle = rga(hcD);
-  
-  // 頭の形を描画
-  ctx.beginPath();
-  ctx.moveTo(cx, hy);
-  ctx.bezierCurveTo(cx - foreheadX * 1.1, hy, cx - eraX * 1.2, ty + fH, cx - eraX, ty + fH + mH);
-  ctx.lineTo(cx + eraX, ty + fH + mH);
-  ctx.bezierCurveTo(cx + eraX * 1.2, ty + fH, cx + foreheadX * 1.1, hy, cx, hy);
+  head(); // 上で定義したheadを実行
   ctx.fill();
   
   // 毛並みの線
