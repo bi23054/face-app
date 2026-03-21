@@ -171,7 +171,6 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
   }
 
   const strand = (sx:number, sy:number, ex:number, ey:number, bend:number, a:number, lw:number) => { ctx.save(); ctx.lineCap="round"; ctx.strokeStyle=rga(hcD,a); ctx.lineWidth=lw; ctx.beginPath(); ctx.moveTo(sx,sy); ctx.bezierCurveTo(sx+bend*0.4,sy+(ey-sy)*0.3, ex+bend*0.6,sy+(ey-sy)*0.7, ex,ey); ctx.stroke(); ctx.restore(); };
-}
 
   if (style===0) {
     // ベリーショート
@@ -379,6 +378,7 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
     [[cx,cx,ty+105,4],[cx-sr*0.32,cx-sr*0.52,ty+115,-7],[cx+sr*0.32,cx+sr*0.52,ty+115,7],[cx-sr*0.62,cx-sr*0.90,ty+108,-5],[cx+sr*0.62,cx+sr*0.90,ty+108,5]].forEach(([sx,ex,ey,b],i)=>strand(sx,hy+16,ex,ey,b,0.24,0.6+i%2*0.3));
     shine(cx-sr*0.1,hy+20,sr*0.38,15);
   }
+}
 
 function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, fH:number, vol:number, bangStyle:number, mainColor:string) {
   if (bangStyle===0) return;
