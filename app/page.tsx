@@ -563,78 +563,58 @@ export default function Home() {
 return (
     <div style={{
       display: "flex",
-      flexDirection: (isMounted && window.innerWidth < 768) ? "column" : "row", // スマホなら縦、PCなら横
+      flexDirection: (isMounted && window.innerWidth < 768) ? "column" : "row",
       height: "100vh",
-      overflow: (isMounted && window.innerWidth < 768) ? "auto" : "hidden", // スマホならスクロール可能に
+      overflow: "hidden", // 全体は固定して、中身だけスクロールさせる
       background: "#edeae5",
       fontFamily: "'Georgia',serif"
     }}>
-      {/* 左（上）：キャンバスエリア */}
+      {/* 【上】：キャンバスエリア（スマホの時は高さを抑える） */}
       <div style={{
-        flex: (isMounted && window.innerWidth < 768) ? "none" : "1",
+        flex: (isMounted && window.innerWidth < 768) ? "0 0 auto" : "1", // スマホなら中身に合わせる
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "32px 20px",
+        padding: (isMounted && window.innerWidth < 768) ? "10px 20px" : "32px 20px", // スマホなら上下の隙間を削る
         background: "#f9f6f2",
-        borderRight: (isMounted && window.innerWidth < 768) ? "none" : "1px solid #ddd",
-        borderBottom: (isMounted && window.innerWidth < 768) ? "1px solid #ddd" : "none"
+        borderBottom: "1px solid #ddd"
       }}>
-        <div style={{fontSize:"10px",letterSpacing:"4px",color:"#aaa",textTransform:"uppercase",marginBottom:"12px"}}>Portrait Studio</div>
+        <div style={{fontSize:"8px",letterSpacing:"3px",color:"#ccc",textTransform:"uppercase",marginBottom:"6px"}}>Preview</div>
         
-        {/* キャンバスがスマホからはみ出さないように設定 */}
+        {/* キャンバスをスマホなら少し小さめに見せる（65%設定） */}
         <canvas ref={canvasRef} width={300} height={420} style={{
           borderRadius:"6px",
           background:"#f9f6f2",
-          boxShadow:"0 10px 50px rgba(0,0,0,0.15)",
-          maxWidth: "100%", 
+          boxShadow:"0 5px 25px rgba(0,0,0,0.1)",
+          maxWidth: (isMounted && window.innerWidth < 768) ? "65%" : "100%", // ★ここ！スマホなら65%に
           height: "auto"
         }} />
 
-        <div style={{display:"flex",gap:"10px",marginTop:"20px",minHeight:"37px"}}>
+        <div style={{display:"flex",gap:"10px",marginTop:"10px",minHeight:"37px"}}>
           {isMounted && (
             <>
-              <button
-                onClick={undo}
-                disabled={!prev}
-                style={{
-                  padding:"10px 22px",fontSize:"12px",borderRadius:"20px",border:"none",
-                  cursor:prev?"pointer":"default",
-                  background:prev?"#c8a97e":"#2a2520",
-                  color:prev?"#18150f":"#3a3530",
-                  letterSpacing:"1.5px",fontWeight:"bold"
-                }}
-              >
-                ↩ 戻る
-              </button>
-              <button
-                onClick={saveImage}
-                style={{
-                  padding:"10px 22px",fontSize:"12px",borderRadius:"20px",border:"none",
-                  cursor:"pointer",background:"#c8a97e",color:"#18150f",
-                  letterSpacing:"1.5px",fontWeight:"bold"
-                }}
-              >
-                💾 保存
-              </button>
+              <button onClick={undo} disabled={!prev} style={{padding:"6px 16px",fontSize:"10px",borderRadius:"20px",border:"none",cursor:prev?"pointer":"default",background:prev?"#c8a97e":"#2a2520",color:prev?"#18150f":"#3a3530",fontWeight:"bold"}}>↩ 戻る</button>
+              <button onClick={saveImage} style={{padding:"6px 16px",fontSize:"10px",borderRadius:"20px",border:"none",cursor:"pointer",background:"#c8a97e",color:"#18150f",fontWeight:"bold"}}>💾 保存</button>
             </>
           )}
         </div>
       </div>
 
-      {/* 右（下）：操作パネルエリア */}
+      {/* 【下】：操作パネルエリア（ここを広げる！） */}
       <div style={{
-        flex: "1.2",
+        flex: "1", // 残りのスペースを全部使う
         background: "#0d0b09",
         color: "#e2d9cc",
-        padding: "24px 20px",
-        overflowY: "auto",
-        height: (isMounted && window.innerWidth < 768) ? "auto" : "100%"
+        padding: "20px",
+        overflowY: "auto", // ここだけスクロールさせる
+        WebkitOverflowScrolling: "touch"
       }}>
-        <div style={{marginBottom:"20px",paddingLeft:"12px"}}>
-          <h2 style={{fontSize:"14px",letterSpacing:"6px",color:"#c8a97e",margin:0}}>DESIGNER</h2>
+        <div style={{marginBottom:"15px",paddingLeft:"12px"}}>
+          <h2 style={{fontSize:"13px",letterSpacing:"4px",color:"#c8a97e",margin:0}}>DESIGNER</h2>
         </div>
+        
+        <div style={{display:"flex",flexDirection:"column",gap:"8px",maxWidth:"480px"}}>
 
           <Sec title="顔">
             <Sld label="横幅"       v={s.faceW}     mn={0.72} mx={1.3}  st={0.02} fn={v=>set("faceW",v)} />
@@ -736,10 +716,11 @@ return (
             <ColorSwatch label="チーク色" v={s.cheekColor} fn={v=>set("cheekColor",v)} list={CHEEK_COLORS} />
           </Sec>
 
-        
+        </div>
       </div>
     </div>
   );
+  
 }
 
 const HAIR_COLORS = [
