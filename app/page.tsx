@@ -609,10 +609,10 @@ export default function Home() {
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:"8px",maxWidth:"480px"}}>
           <Sec title="顔">
-            <Sld label="横幅" v={s.faceW} mn={0.72} mx={1.3} st={0.02} fn={v=>set("faceW",v)} />
+            <Sld label="横幅" v={s.faceW} mn={0.5} mx={1.3} st={0.02} fn={v=>set("faceW",v)} />
             <Sld label="縦幅" v={s.faceH} mn={0.5} mx={1.6} st={0.02} fn={v=>set("faceH",v)} />
             <Sld label="額の高さ" v={s.foreheadH} mn={20} mx={100} st={1} fn={v=>set("foreheadH",v)} />
-            <Sld label="エラの張り" v={s.eraW} mn={-0.3} mx={0.4} st={0.03} fn={v=>set("eraW",v)} />
+            <Sld label="エラの張り" v={s.eraW} mn={0} mx={0.4} st={0.03} fn={v=>set("eraW",v)} />
             <Sld label="顎の長さ" v={s.chinLen} mn={0} mx={60} st={1} fn={v=>set("chinLen",v)} />
             <Sld label="顎の太さ" v={s.chinW} mn={0} mx={65} st={1} fn={v=>set("chinW",v)} />
           </Sec>
@@ -621,18 +621,18 @@ export default function Home() {
             <Sld label="高さ" v={s.earY} mn={-30} mx={30} st={1} fn={v=>set("earY",v)} />
           </Sec>
           <Sec title="目">
-            <Sld label="横幅" v={s.eyeW} mn={0} mx={1.75} st={0.05} fn={v=>set("eyeW",v)} />
-            <Sld label="縦幅" v={s.eyeH} mn={0} mx={1.75} st={0.05} fn={v=>set("eyeH",v)} />
+            <Sld label="横幅" v={s.eyeW} mn={0} mx={2} st={0.05} fn={v=>set("eyeW",v)} />
+            <Sld label="縦幅" v={s.eyeH} mn={0} mx={2} st={0.05} fn={v=>set("eyeH",v)} />
             <ColorSwatch label="瞳の色" v={s.irisColor} fn={v=>set("irisColor",v)} list={IRIS_COLORS} />
             <Sld label="瞳の大きさ" v={s.irisR} mn={0} mx={10.0} st={0.2} fn={v=>set("irisR",v)} />
             <Sld label="瞳孔" v={s.pupilR} mn={0} mx={10.0} st={0.1} fn={v=>set("pupilR",v)} />
             <Sld label="目の間隔" v={s.eyeDist} mn={-25} mx={12} st={1} fn={v=>set("eyeDist",v)} />
-            <Sld label="目の高さ" v={s.eyeVert} mn={-15} mx={25} st={1} fn={v=>set("eyeVert",v)} leftLabel="低" rightLabel="高" />
-            <Sld label="目頭角度" v={s.tailAng} mn={-6} mx={6} st={0.2} fn={v=>set("tailAng",v)} />
-            <Sld label="目尻角度" v={s.headAng} mn={-6} mx={6} st={0.2} fn={v=>set("headAng",v)} />
+            <Sld label="目の高さ" v={s.eyeVert} mn={-25} mx={25} st={1} fn={v=>set("eyeVert",v)} leftLabel="低" rightLabel="高" />
+            <Sld label="目頭角度" v={s.tailAng} mn={-10} mx={10} st={0.2} fn={v=>set("tailAng",v)} />
+            <Sld label="目尻角度" v={s.headAng} mn={-10} mx={10} st={0.2} fn={v=>set("headAng",v)} />
             <Tabs label="二重" v={s.dblType} opts={["なし","末広","並行"]} fn={v=>set("dblType",v)} />
             {s.dblType>0&&<Ind>
-              <Sld label="二重の幅" v={s.dblWidth} mn={1.0} mx={8.0} st={0.2} fn={v=>set("dblWidth",v)} />
+              <Sld label="二重の幅" v={s.dblWidth} mn={1.0} mx={10.0} st={0.2} fn={v=>set("dblWidth",v)} />
               <Sld label="二重の濃さ" v={s.dblDepth} mn={0.1} mx={1.0} st={0.05} fn={v=>set("dblDepth",v)} />
             </Ind>}
             <Sep />
@@ -653,10 +653,10 @@ export default function Home() {
             <Sub label="長さ（目尻 / 中央 / 目頭）" />
             <Ind>
               <Sld label="目尻" v={s.lashLenI} mn={0} mx={3.0} st={0.05} fn={v=>set("lashLenI",v)} />
-              <Sld label="中央" v={s.lashLenC} mn={0} mx={1.8} st={0.05} fn={v=>set("lashLenC",v)} />
+              <Sld label="中央" v={s.lashLenC} mn={0} mx={3.0} st={0.05} fn={v=>set("lashLenC",v)} />
               <Sld label="目頭" v={s.lashLenO} mn={0} mx={3.0} st={0.05} fn={v=>set("lashLenO",v)} />
             </Ind>
-            <Sub label="密度（目尻 / 中央 / 目頭）" />
+            <Sub label="濃さ（目尻 / 中央 / 目頭）" />
             <Ind>
               <Sld label="目尻" v={s.lashDensI} mn={0} mx={1.75} st={0.05} fn={v=>set("lashDensI",v)} />
               <Sld label="中央" v={s.lashDensC} mn={0} mx={1.75} st={0.05} fn={v=>set("lashDensC",v)} />
@@ -664,27 +664,27 @@ export default function Home() {
             </Ind>
           </Sec>
           <Sec title="眉毛">
-            <Sld label="高さ" v={s.browY} mn={-20} mx={20} st={0.5} fn={v=>set("browY",v)} />
-            <Sld label="間隔" v={s.browDist} mn={-15} mx={15} st={1} fn={v=>set("browDist",v)} />
+            <Sld label="高さ" v={s.browY} mn={-20} mx={30} st={0.5} fn={v=>set("browY",v)} />
+            <Sld label="間隔" v={s.browDist} mn={-15} mx={20} st={1} fn={v=>set("browDist",v)} />
             <Sld label="長さ" v={s.browW} mn={0} mx={1.8} st={0.05} fn={v=>set("browW",v)} />
-            <Sld label="角度" v={s.browAngle} mn={-6} mx={6} st={0.3} fn={v=>set("browAngle",v)} />
-            <Sld label="太さ" v={s.browT} mn={0.3} mx={2} st={0.05} fn={v=>set("browT",v)} />
+            <Sld label="角度" v={s.browAngle} mn={-8} mx={8} st={0.3} fn={v=>set("browAngle",v)} />
+            <Sld label="太さ" v={s.browT} mn={0} mx={5} st={0.05} fn={v=>set("browT",v)} />
             <Sld label="濃さ" v={s.browDens} mn={0} mx={1.5} st={0.05} fn={v=>set("browDens",v)} />
             <Tabs label="形" v={s.browShape} opts={["アーチ","並行"]} fn={v=>set("browShape",v)} />
             <ColorSwatch label="色" v={s.browColor} fn={v=>set("browColor",v)} list={BROW_COLORS} />
           </Sec>
           <Sec title="鼻">
-            <Sld label="鼻筋光沢" v={s.noseBr} mn={0} mx={2} st={0.05} fn={v=>set("noseBr",v)} />
-            <Sld label="縦幅" v={s.noseLen} mn={0} mx={2} st={0.05} fn={v=>set("noseLen",v)} />
-            <Sld label="横幅" v={s.noseWide} mn={0.2} mx={2.5} st={0.05} fn={v=>set("noseWide",v)} />
+            <Sld label="鼻筋" v={s.noseBr} mn={0} mx={5} st={0.05} fn={v=>set("noseBr",v)} />
+            <Sld label="縦幅" v={s.noseLen} mn={0} mx={5} st={0.05} fn={v=>set("noseLen",v)} />
+            <Sld label="横幅" v={s.noseWide} mn={0} mx={5} st={0.05} fn={v=>set("noseWide",v)} />
             <Sld label="小鼻" v={s.alaeSize} mn={0} mx={2.0} st={0.05} fn={v=>set("alaeSize",v)} />
           </Sec>
           <Sec title="口">
-            <Sld label="横幅" v={s.mouthW} mn={0} mx={1.8} st={0.05} fn={v=>set("mouthW",v)} />
+            <Sld label="横幅" v={s.mouthW} mn={0} mx={2.0} st={0.05} fn={v=>set("mouthW",v)} />
             <Sld label="上唇の厚さ" v={s.upperLipT} mn={0.3} mx={3} st={0.05} fn={v=>set("upperLipT",v)} />
             <Sld label="下唇の厚さ" v={s.lowerLipT} mn={0.3} mx={5} st={0.05} fn={v=>set("lowerLipT",v)} />
-            <Sld label="高さ" v={s.mouthVert} mn={-15} mx={20} st={1} fn={v=>set("mouthVert",v)} />
-            <Sld label="口角" v={s.cornerLift} mn={-3} mx={3} st={0.1} fn={v=>set("cornerLift",v)} />
+            <Sld label="高さ" v={s.mouthVert} mn={-15} mx={25} st={1} fn={v=>set("mouthVert",v)} />
+            <Sld label="口角" v={s.cornerLift} mn={-5} mx={5} st={0.1} fn={v=>set("cornerLift",v)} />
             <ColorSwatch label="唇の色" v={s.lipColor} fn={v=>set("lipColor",v)} list={LIP_COLORS} />
           </Sec>
           <Sec title="髪">
@@ -694,10 +694,10 @@ export default function Home() {
             <ColorSwatch label="髪色" v={s.hairMain} fn={v=>set("hairMain",v)} list={HAIR_COLORS} />
           </Sec>
           <Sec title="肌・メイク">
-            <Sld label="肌色" v={s.skinT} mn={0} mx={1} st={0.01} fn={v=>set("skinT",v)} leftLabel="白" rightLabel="暗" />
-            <Sld label="陰影" v={s.shadow} mn={0.1} mx={1.0} st={0.05} fn={v=>set("shadow",v)} />
+            <Sld label="肌色" v={s.skinT} mn={0} mx={1} st={0.01} fn={v=>set("skinT",v)} leftLabel="明" rightLabel="暗" />
+            <Sld label="陰影" v={s.shadow} mn={0} mx={1.0} st={0.05} fn={v=>set("shadow",v)} />
             <Sep />
-            <Sld label="チーク範囲" v={s.cheekSize} mn={0.1} mx={2.0} st={0.05} fn={v=>set("cheekSize",v)} />
+            <Sld label="チーク範囲" v={s.cheekSize} mn={0} mx={1.5} st={0.05} fn={v=>set("cheekSize",v)} />
             <Sld label="チーク横移動" v={s.cheekX} mn={-30} mx={30} st={1} fn={v=>set("cheekX",v)} />
             <Sld label="チーク縦移動" v={s.cheekY} mn={-30} mx={30} st={1} fn={v=>set("cheekY",v)} />
             <ColorSwatch label="チーク色" v={s.cheekColor} fn={v=>set("cheekColor",v)} list={CHEEK_COLORS} />
@@ -788,9 +788,9 @@ function TearBagColorSwatch({label,v,fn}:{label:string;v:string;fn:(s:string)=>v
 }
 
 const HAIR_COLORS = ["#060402","#0e0804","#160c04","#1e1006","#2c1608","#3c1e0c","#3c3028","#102040","#102818","#301848","#502810","#643218","#7a4020","#8e5028","#a06030","#b07838","#c09050","#D4AF37","#d0a868","#e0c088","#F3E5AB","#ecd8a8","#f8ecd0","#6a5a48","#9a8a78","#c0b0a0","#BDC3C7","#7F8C8D","#d8d0c8","#f0ece8","#601818","#8a2420","#a02030","#a03028","#c84040","#c84838","#d86040","#e06060","#e08858","#c84878","#e060a0","#f080c0","#f8a8d8","#ffd0e8","#502878","#7040a8","#9060c8","#b080e0","#c8a0f0","#183060","#1e4888","#2868b8","#4090d8","#87CEEB","#70b8f0","#184830","#206840","#308858","#40a870","#2ECC71","#68c898"];
-const BROW_COLORS = ["#060402","#0e0804","#1e1006","#3c1e0c","#502810","#643218","#7a4020","#a06030","#c09050","#d0a868","#e0c088","#f8ecd0","#3c3028","#6a5a48","#9a8a78","#c0b0a0","#7F8C8D","#d8d0c8","#601818","#8a2420","#c84040","#c84878","#e060a0","#102040","#1e4888","#2868b8","#4090d8","#102818","#206840","#308858","#40a870","#301848","#7040a8","#9060c8","#b080e0"];
-const IRIS_COLORS = ["#100804","#1e1008","#2c1a0c","#402410","#543018","#6a4020","#183040","#1e4060","#285888","#3870b0","#4890d8","#68a8e8","#102820","#184030","#206048","#308860","#40a878","#58c890","#301028","#502040","#703060","#904888","#b068a8","#282010","#403018","#584228","#705840","#8a7058","#181818","#303030","#484848","#606060"];
-const LIP_COLORS = ["#fce8e4","#f8d0c8","#f0b8b0","#e89888","#d87868","#c85858","#c04848","#a83838","#903030","#7a2828","#602020","#e8789a","#d85880","#c03868","#a82050","#901838","#e89078","#d07058","#b85040","#a04030","#883028","#f0c0a0","#e8a890","#d88870","#c07050","#a85838","#4a1828","#6a2038","#8a2848","#a83058","#302028","#503040","#704050","#905060"];
-const MAKEUP_COLORS = ["#a06040","#c05858","#e08870","#f0a0a0","#d07090","#8a3a2a","#b06080","#e080b0","#f0c0e0","#8040a0","#60208a"];
-const CHEEK_COLORS = ["#f0a0a0","#e08870","#d07090","#c05858","#a06040","#f8c0c0","#ffd0e8","#e8a0c0","#d080a0","#f0d0b0","#e0b090"];
-const TEARBAG_COLORS = ["skin","#f0a0a0","#f8b8b8","#ffc8d0","#ffb0c8","#f090b0","#e8789a","#d85880","#c03868","#f0c0e0","#e8a0c8","#d080b0","#f0d0b0","#e8b890","#d09070","#c8e0f8","#a8c8f0","#88b0e8"];
+const BROW_COLORS = ["#060402","#0e0804","#160c04","#1e1006","#2c1608","#3c1e0c","#3c3028","#102040","#102818","#301848","#502810","#643218","#7a4020","#8e5028","#a06030","#b07838","#c09050","#D4AF37","#d0a868","#e0c088","#F3E5AB","#ecd8a8","#f8ecd0","#6a5a48","#9a8a78","#c0b0a0","#BDC3C7","#7F8C8D","#d8d0c8","#f0ece8","#601818","#8a2420","#a02030","#a03028","#c84040","#c84838","#d86040","#e06060","#e08858","#c84878","#e060a0","#f080c0","#f8a8d8","#ffd0e8","#502878","#7040a8","#9060c8","#b080e0","#c8a0f0","#183060","#1e4888","#2868b8","#4090d8","#87CEEB","#70b8f0","#184830","#206840","#308858","#40a870","#2ECC71","#68c898"];
+const IRIS_COLORS = ["#060402","#0e0804","#160c04","#1e1006","#2c1608","#3c1e0c","#3c3028","#102040","#102818","#301848","#502810","#643218","#7a4020","#8e5028","#a06030","#b07838","#c09050","#D4AF37","#d0a868","#e0c088","#F3E5AB","#ecd8a8","#f8ecd0","#6a5a48","#9a8a78","#c0b0a0","#BDC3C7","#7F8C8D","#d8d0c8","#f0ece8","#601818","#8a2420","#a02030","#a03028","#c84040","#c84838","#d86040","#e06060","#e08858","#c84878","#e060a0","#f080c0","#f8a8d8","#ffd0e8","#502878","#7040a8","#9060c8","#b080e0","#c8a0f0","#183060","#1e4888","#2868b8","#4090d8","#87CEEB","#70b8f0","#184830","#206840","#308858","#40a870","#2ECC71","#68c898"];
+const LIP_COLORS = ["skin","#fce8e4","#f8d0c8","#f0b8b0","#e89888","#d87868","#c85858","#c04848","#a83838","#903030","#7a2828","#602020","#e8789a","#d85880","#c03868","#a82050","#901838","#e89078","#d07058","#b85040","#a04030","#883028","#f0c0a0","#e8a890","#d88870","#c07050","#a85838","#4a1828","#6a2038","#8a2848","#a83058","#302028","#503040","#704050","#905060"];
+const MAKEUP_COLORS = ["#060402","#0e0804","#160c04","#1e1006","#2c1608","#3c1e0c","#3c3028","#102040","#102818","#301848","#502810","#643218","#7a4020","#8e5028","#a06030","#b07838","#c09050","#D4AF37","#d0a868","#e0c088","#F3E5AB","#ecd8a8","#f8ecd0","#6a5a48","#9a8a78","#c0b0a0","#BDC3C7","#7F8C8D","#d8d0c8","#f0ece8","#601818","#8a2420","#a02030","#a03028","#c84040","#c84838","#d86040","#e06060","#e08858","#c84878","#e060a0","#f080c0","#f8a8d8","#ffd0e8","#502878","#7040a8","#9060c8","#b080e0","#c8a0f0","#183060","#1e4888","#2868b8","#4090d8","#87CEEB","#70b8f0","#184830","#206840","#308858","#40a870","#2ECC71","#68c898"];
+const CHEEK_COLORS = ["skin","#fce8e4","#f8d0c8","#f0b8b0","#e89888","#d87868","#c85858","#c04848","#a83838","#903030","#7a2828","#602020","#e8789a","#d85880","#c03868","#a82050","#901838","#e89078","#d07058","#b85040","#a04030","#883028","#f0c0a0","#e8a890","#d88870","#c07050","#a85838","#4a1828","#6a2038","#8a2848","#a83058","#302028","#503040","#704050","#905060"];
+const TEARBAG_COLORS = ["skin","#f0a0a0","#f8b8b8","#ffc8d0","#ffb0c8","#f090b0","#e8789a","#d85880","#c03868","#f0c0e0","#e8a0c8","#d080b0","#f0d0b0","#e8b890","#d09070","#c8e0f8","#a8c8f0","#88b0e8","#8040a0","#56534d","#100e09"];
