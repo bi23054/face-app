@@ -121,36 +121,16 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
     ctx.bezierCurveTo(cx + sr * 0.86, hy + 9, cx + sr * 0.38, hy - 10, cx, hy - 8);
     ctx.closePath();
   };
-  // --- ★ここまで ---
 
-  ctx.save();
-  ctx.fillStyle = rga(hcD);
-  head(); // 上で定義したheadを実行
-  ctx.fill();
-  
-  // 毛並みの線
-  ctx.strokeStyle = rga(hcD, 0.2);
-  for (let i = 0; i < 10; i++) {
-    const tx = cx - sr * 0.7 + (i / 9) * sr * 1.4;
-    ctx.beginPath(); ctx.moveTo(tx, hy + 10); ctx.lineTo(tx, ty + fH); ctx.stroke();
-  }
-  ctx.restore();
-}
-
-  // 頭部ベース
-  const head=()=>{
-    ctx.beginPath(); ctx.moveTo(cx,hy-8);
-    ctx.bezierCurveTo(cx-sr*0.38,hy-10, cx-sr*0.86,hy+9, cx-sr*0.93,ty+26);
-    ctx.bezierCurveTo(cx-sr*0.97,ty+50, cx-sr*0.95,ty+70, cx-sr*0.84,ty+92);
-    ctx.bezierCurveTo(cx-sr*0.58,ty+104, cx-sr*0.26,ty+110, cx,ty+110);
-    ctx.bezierCurveTo(cx+sr*0.26,ty+110, cx+sr*0.58,ty+104, cx+sr*0.84,ty+92);
-    ctx.bezierCurveTo(cx+sr*0.95,ty+70, cx+sr*0.97,ty+50, cx+sr*0.93,ty+26);
-    ctx.bezierCurveTo(cx+sr*0.86,hy+9, cx+sr*0.38,hy-10, cx,hy-8);
-    ctx.closePath();
-  };
-  const headStrands=(endY:number)=>{
-    const pairs=[[cx-sr*0.22,cx-sr*0.30,-6],[cx,cx+sr*0.05,3],[cx+sr*0.22,cx+sr*0.30,6],[cx-sr*0.54,cx-sr*0.78,-4],[cx+sr*0.54,cx+sr*0.78,4],[cx-sr*0.78,cx-sr*0.90,-3],[cx+sr*0.78,cx+sr*0.90,3]];
-    pairs.forEach(([sx,ex,b],i)=>strand(sx,hy+12+(i%2)*8,ex,endY,b,0.18+i%3*0.04,0.5+i%2*0.3));
+  const headStrands = (endY: number) => {
+    const pairs: [number, number, number][] = [
+      [cx - sr * 0.22, cx - sr * 0.30, -6],
+      [cx, cx + sr * 0.05, 3],
+      [cx + sr * 0.22, cx + sr * 0.30, 6],
+      [cx - sr * 0.54, cx - sr * 0.78, -4],
+      [cx + sr * 0.54, cx + sr * 0.78, 4]
+    ];
+    pairs.forEach(([sx, ex, b], i) => strand(sx, hy + 12 + (i % 2) * 8, ex, endY, b, 0.18 + (i % 3) * 0.04, 0.5 + (i % 2) * 0.3));
   };
 
   if (style===0) {
@@ -361,33 +341,46 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
   }
 
 function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, fH:number, vol:number, bangStyle:number, mainColor:string) {
-  if (bangStyle === 0) return;
-  
-  const foreheadX = fw * 0.92;      // 額の幅に合わせる
-  const sr = foreheadX * vol; 
-  const bangTop = ty - (fH * 0.05); // 生え際
-  const bangBot = ty + (fH * 0.5);  // 前髪の下端
+  if (bangStyle===0) return;
+  const foreheadX = fw*0.92;
+  const sr = foreheadX * vol;           
+  const bangTop = ty - fH*0.12;         
+  const bangBot = ty + fH*0.55;         
+  const hc=hr(mainColor), hcM=drk(hc,15), hcD=drk(hc,30);
 
-  const hc = hr(mainColor);
-  const hcM = drk(hc, 15);
+  const fillBang=(path:()=>void)=>{
+    ctx.save(); ctx.fillStyle=rga(hcM); path(); ctx.fill(); ctx.restore();
+  };
 
-  ctx.save();
-  ctx.fillStyle = rga(hcM);
-  
-  // 前髪の形（額の幅 foreheadX にピッタリ合わせる）
-  ctx.beginPath();
-  ctx.moveTo(cx - foreheadX, bangTop);
-  ctx.bezierCurveTo(cx - foreheadX, bangBot, cx + foreheadX, bangBot, cx + foreheadX, bangTop);
-  ctx.closePath();
-  ctx.fill();
-
-  // 束感
-  ctx.strokeStyle = "rgba(0,0,0,0.1)";
-  for (let i = -2; i <= 2; i++) {
-    const tx = cx + i * (foreheadX * 0.4);
-    ctx.beginPath(); ctx.moveTo(tx, bangTop); ctx.lineTo(tx, bangBot); ctx.stroke();
+  if (bangStyle===1) { // ぱっつん
+    fillBang(()=>{
+      ctx.beginPath(); ctx.moveTo(cx-sr, bangTop);
+      ctx.lineTo(cx-sr, ty+fH*0.12);
+      ctx.bezierCurveTo(cx-sr*0.6, bangBot, cx+sr*0.6, bangBot, cx+sr, ty+fH*0.12);
+      ctx.lineTo(cx+sr, bangTop); ctx.closePath();
+    });
+  } else if (bangStyle===3) { // センター分け
+    for (const s of [-1,1] as const) {
+      fillBang(()=>{
+        ctx.beginPath(); ctx.moveTo(cx+s*sr*0.02, bangTop);
+        ctx.bezierCurveTo(cx+s*sr*0.3, bangBot-10, cx+s*sr*0.8, ty+fH*0.1, cx+s*sr, bangTop);
+        ctx.closePath();
+      });
+    }
+  } else if (bangStyle===5) { // シースルー
+    ctx.save(); ctx.globalAlpha=0.6;
+    for(let i=-2; i<=2; i++) {
+      ctx.beginPath(); ctx.ellipse(cx+i*sr*0.35, ty+fH*0.2, sr*0.1, fH*0.4, 0, 0, Math.PI*2);
+      ctx.fillStyle=rga(hcM); ctx.fill();
+    }
+    ctx.restore();
+  } else { // その他（斜め・流し）
+    fillBang(()=>{
+      ctx.beginPath(); ctx.moveTo(cx-sr, bangTop);
+      ctx.bezierCurveTo(cx-sr*0.5, bangBot, cx+sr*0.8, ty+fH*0.2, cx+sr, bangTop);
+      ctx.closePath();
+    });
   }
-  ctx.restore();
 }
 
 function drawEyebrow(ctx:CanvasRenderingContext2D, bx:number, side:number, baseY:number, bW:number, targetAngle:number, bT:number, bDens:number, bShape:number, browColor:string) {
@@ -591,7 +584,7 @@ export default function Home() {
     if (st.eyeShadowW>0||st.eyeShadowH>0) {
       const sColor=hr(st.eyeShadowColor);
       for (const xs of [-1,1] as const) {
-        const ex=cx+xs*40+xs*st.eyeDist+st.eyeShadowX, ew=13.5*st.eyeW, eh=5.8*st.eyeH;
+        const ex=cx+xs*40+xs*st.eyeDist+xs*st.eyeShadowX, ew=13.5*st.eyeW, eh=5.8*st.eyeH;
         const centerY=eyeY_abs-4+st.eyeShadowH*(-5)+st.eyeShadowY;
         const shadowW=Math.max(1,ew*st.eyeShadowW);
         const shadowH=Math.max(1,4+st.eyeShadowH*14);
