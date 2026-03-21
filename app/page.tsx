@@ -98,38 +98,37 @@ function drawEars(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
   }
 }
 
-function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, style:number, vol:number, mainColor:string) {
-  const sr=fw*vol*1.08, hy=ty-78;
-  const hc=hr(mainColor);
-  const hcD=drk(hc,45), hcDD=drk(hc,65), hcM=drk(hc,20), hcL=lit(hc,18);
+function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, fH:number, mH:number, cH:number, eraW:number, style:number, vol:number, mainColor:string) {
+  const era = Math.max(-0.5, Math.min(0.4, eraW));
+  const foreheadX = fw * 0.92;      // 額の幅
+  const eraX = fw * (0.92 + era);   // 頬の最大幅
+  
+  // 頭頂部の高さ（tyから少し上）と、髪の広がり（eraX基準）
+  const hy = ty - (fH * 0.15); 
+  const sr = eraX * vol * 1.05;
 
-  // グラデーション塗り
-  const fillHair=(x0:number,y0:number,x1:number,y1:number)=>{
-    const g=ctx.createLinearGradient(x0,y0,x1,y1);
-    g.addColorStop(0,rga(hcDD));
-    g.addColorStop(0.18,rga(hcD));
-    g.addColorStop(0.42,rga(hcM));
-    g.addColorStop(0.65,rga(hcL));
-    g.addColorStop(0.82,rga(hcM));
-    g.addColorStop(1,rga(hcDD));
-    ctx.fillStyle=g; ctx.fill();
-  };
+  const hc = hr(mainColor);
+  const hcD = drk(hc, 38);
 
-  // 毛束ベジェストローク
-  const strand=(sx:number,sy:number,ex:number,ey:number,bend:number,a:number,lw:number)=>{
-    ctx.save(); ctx.lineCap="round";
-    ctx.strokeStyle=rga(hcD,a); ctx.lineWidth=lw;
-    ctx.beginPath(); ctx.moveTo(sx,sy);
-    ctx.bezierCurveTo(sx+bend*0.4,sy+(ey-sy)*0.3, ex+bend*0.6,sy+(ey-sy)*0.7, ex,ey);
-    ctx.stroke(); ctx.restore();
-  };
-
-  // 天使の輪
-  const shine=(hx:number,hy2:number,rx:number,ry:number)=>{
-    const g=ctx.createRadialGradient(hx-rx*0.1,hy2,1,hx,hy2+ry*0.1,rx);
-    g.addColorStop(0,"rgba(255,255,255,0.20)"); g.addColorStop(0.45,"rgba(255,255,255,0.07)"); g.addColorStop(1,"rgba(255,255,255,0)");
-    ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(hx,hy2,rx,ry,0,0,Math.PI*2); ctx.fill();
-  };
+  ctx.save();
+  ctx.fillStyle = rga(hcD);
+  
+  // 頭の形を描画
+  ctx.beginPath();
+  ctx.moveTo(cx, hy);
+  ctx.bezierCurveTo(cx - foreheadX * 1.1, hy, cx - eraX * 1.2, ty + fH, cx - eraX, ty + fH + mH);
+  ctx.lineTo(cx + eraX, ty + fH + mH);
+  ctx.bezierCurveTo(cx + eraX * 1.2, ty + fH, cx + foreheadX * 1.1, hy, cx, hy);
+  ctx.fill();
+  
+  // 毛並みの線
+  ctx.strokeStyle = rga(hcD, 0.2);
+  for (let i = 0; i < 10; i++) {
+    const tx = cx - sr * 0.7 + (i / 9) * sr * 1.4;
+    ctx.beginPath(); ctx.moveTo(tx, hy + 10); ctx.lineTo(tx, ty + fH); ctx.stroke();
+  }
+  ctx.restore();
+}
 
   // 頭部ベース
   const head=()=>{
@@ -356,103 +355,33 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
 }
 
 function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, fH:number, vol:number, bangStyle:number, mainColor:string) {
-  if (bangStyle===0) return;
+  if (bangStyle === 0) return;
   
-  const foreheadX = fw*0.92;
-  const sr = foreheadX * vol;           // 前髪幅 = 額幅基準
-  const bangTop = ty - fH*0.12;          // 前髪の付け根（頭頂部より少し下）
-  const bangBot = ty + fH*0.55;          // 前髪の下端（額の中ほど）
+  const foreheadX = fw * 0.92;      // 額の幅に合わせる
+  const sr = foreheadX * vol; 
+  const bangTop = ty - (fH * 0.05); // 生え際
+  const bangBot = ty + (fH * 0.5);  // 前髪の下端
 
-  const hc=hr(mainColor), hcD=drk(hc,30), hcM=drk(hc,15), hcDD=drk(hc,48);
+  const hc = hr(mainColor);
+  const hcM = drk(hc, 15);
 
-  const fillBang=(path:()=>void)=>{
-    const g=ctx.createLinearGradient(cx,bangTop,cx,bangBot+fH*0.10);
-    g.addColorStop(0,rga(hcD)); g.addColorStop(0.35,rga(hcM)); g.addColorStop(0.75,rga(hcD)); g.addColorStop(1,rga(hcDD,0.7));
-    ctx.save(); path(); ctx.fillStyle=g; ctx.fill(); ctx.restore();
-  };
-  const bStrands=(n:number,x0:number,x1:number,yBot:number)=>{
-    ctx.save(); ctx.lineCap="round"; ctx.strokeStyle=rga(hcD,0.15); ctx.lineWidth=0.9;
-    for(let i=0;i<n;i++){
-      const t=(i+0.5)/n, bx=x0+t*(x1-x0), curve=(t-0.5)*foreheadX*0.08;
-      ctx.beginPath(); ctx.moveTo(bx,bangTop);
-      ctx.bezierCurveTo(bx+curve,bangTop+fH*0.18, bx+curve*1.4,bangTop+fH*0.40, bx+curve*0.8,yBot);
-      ctx.stroke();
-    }
-    ctx.restore();
-  };
+  ctx.save();
+  ctx.fillStyle = rga(hcM);
+  
+  // 前髪の形（額の幅 foreheadX にピッタリ合わせる）
+  ctx.beginPath();
+  ctx.moveTo(cx - foreheadX, bangTop);
+  ctx.bezierCurveTo(cx - foreheadX, bangBot, cx + foreheadX, bangBot, cx + foreheadX, bangTop);
+  ctx.closePath();
+  ctx.fill();
 
-  if (bangStyle===1) {
-    // ぱっつん
-    fillBang(()=>{
-      ctx.beginPath(); ctx.moveTo(cx-sr*0.90,bangTop);
-      ctx.lineTo(cx-sr*0.90,ty+fH*0.12);
-      ctx.bezierCurveTo(cx-sr*0.62,bangBot-fH*0.04, cx-sr*0.28,bangBot, cx,bangBot);
-      ctx.bezierCurveTo(cx+sr*0.28,bangBot, cx+sr*0.62,bangBot-fH*0.04, cx+sr*0.90,ty+fH*0.12);
-      ctx.lineTo(cx+sr*0.90,bangTop); ctx.closePath();
-    });
-    bStrands(6,cx-sr*0.82,cx+sr*0.82,bangBot-fH*0.03);
-
-  } else if (bangStyle===2) {
-    // 斜め
-    fillBang(()=>{
-      ctx.beginPath(); ctx.moveTo(cx-sr*0.88,bangTop);
-      ctx.lineTo(cx-sr*0.88,ty+fH*0.10);
-      ctx.bezierCurveTo(cx-sr*0.55,bangBot-fH*0.08, cx-sr*0.08,bangBot+fH*0.06, cx+sr*0.22,bangBot-fH*0.02);
-      ctx.bezierCurveTo(cx+sr*0.54,bangBot-fH*0.14, cx+sr*0.84,ty+fH*0.04, cx+sr*0.90,ty+fH*0.08);
-      ctx.lineTo(cx+sr*0.90,bangTop); ctx.closePath();
-    });
-    bStrands(5,cx-sr*0.80,cx+sr*0.82,bangBot-fH*0.05);
-
-  } else if (bangStyle===3) {
-    // センター
-    for (const sv of [-1,1] as const) {
-      fillBang(()=>{
-        ctx.beginPath(); ctx.moveTo(cx+sv*sr*0.02,bangTop);
-        ctx.lineTo(cx+sv*sr*0.02,ty+fH*0.10);
-        ctx.bezierCurveTo(cx+sv*sr*0.22,bangBot-fH*0.05, cx+sv*sr*0.52,bangBot-fH*0.02, cx+sv*sr*0.74,bangBot-fH*0.08);
-        ctx.bezierCurveTo(cx+sv*sr*0.86,bangBot-fH*0.14, cx+sv*sr*0.90,ty+fH*0.04, cx+sv*sr*0.90,ty+fH*0.08);
-        ctx.lineTo(cx+sv*sr*0.90,bangTop); ctx.closePath();
-      });
-      bStrands(3,cx+sv*sr*0.04,cx+sv*sr*0.84,bangBot-fH*0.06);
-    }
-
-  } else if (bangStyle===4) {
-    // 流し
-    fillBang(()=>{
-      ctx.beginPath(); ctx.moveTo(cx-sr*0.90,bangTop);
-      ctx.lineTo(cx-sr*0.90,ty+fH*0.10);
-      ctx.bezierCurveTo(cx-sr*0.60,bangBot, cx-sr*0.12,bangBot+fH*0.12, cx+sr*0.14,bangBot+fH*0.08);
-      ctx.bezierCurveTo(cx+sr*0.44,bangBot, cx+sr*0.78,ty+fH*0.08, cx+sr*0.90,ty+fH*0.06);
-      ctx.lineTo(cx+sr*0.90,bangTop); ctx.closePath();
-    });
-    bStrands(5,cx-sr*0.82,cx+sr*0.82,bangBot+fH*0.06);
-
-  } else if (bangStyle===5) {
-    // シースルー
-    ctx.save(); ctx.globalAlpha=0.62;
-    fillBang(()=>{
-      ctx.beginPath(); ctx.moveTo(cx-sr*0.82,bangTop);
-      ctx.lineTo(cx-sr*0.82,ty+fH*0.12);
-      ctx.bezierCurveTo(cx-sr*0.52,bangBot-fH*0.04, cx-sr*0.20,bangBot, cx,bangBot);
-      ctx.bezierCurveTo(cx+sr*0.20,bangBot, cx+sr*0.52,bangBot-fH*0.04, cx+sr*0.82,ty+fH*0.12);
-      ctx.lineTo(cx+sr*0.82,bangTop); ctx.closePath();
-    });
-    ctx.restore();
-    bStrands(7,cx-sr*0.75,cx+sr*0.75,bangBot-fH*0.02);
-
-  } else {
-    // ウィスプ
-    ctx.save(); ctx.globalAlpha=0.75;
-    fillBang(()=>{
-      ctx.beginPath(); ctx.moveTo(cx-sr*0.46,bangTop);
-      ctx.lineTo(cx-sr*0.46,ty+fH*0.14);
-      ctx.bezierCurveTo(cx-sr*0.28,bangBot-fH*0.04, cx-sr*0.10,bangBot, cx,bangBot);
-      ctx.bezierCurveTo(cx+sr*0.10,bangBot, cx+sr*0.28,bangBot-fH*0.04, cx+sr*0.46,ty+fH*0.14);
-      ctx.lineTo(cx+sr*0.46,bangTop); ctx.closePath();
-    });
-    ctx.restore();
-    bStrands(4,cx-sr*0.40,cx+sr*0.40,bangBot-fH*0.02);
+  // 束感
+  ctx.strokeStyle = "rgba(0,0,0,0.1)";
+  for (let i = -2; i <= 2; i++) {
+    const tx = cx + i * (foreheadX * 0.4);
+    ctx.beginPath(); ctx.moveTo(tx, bangTop); ctx.lineTo(tx, bangBot); ctx.stroke();
   }
+  ctx.restore();
 }
 
 function drawEyebrow(ctx:CanvasRenderingContext2D, bx:number, side:number, baseY:number, bW:number, targetAngle:number, bT:number, bDens:number, bShape:number, browColor:string) {
@@ -623,7 +552,7 @@ export default function Home() {
     const ty=210-(fH+mH+cH)/2;
     const midStart=ty+fH, midEnd=midStart+mH;
 
-    drawHairBack(ctx,cx,ty,fw,st.hairBack,st.hairVol,st.hairMain);
+    drawHairBack(ctx,cx,ty,fw,fH,mH,cH,eraW,st.hairBack,st.hairVol,st.hairMain);
 
     const faceMidY=ty+(fH+mH+cH)*0.5;
     const g=ctx.createRadialGradient(cx,faceMidY,4,cx,faceMidY,fw*1.5);
