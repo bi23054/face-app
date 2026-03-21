@@ -380,11 +380,13 @@ export default function Home() {
   const [st, setSt] = useState<FaceState>(DEFAULT_STATE);
   const [prev, setPrev] = useState<FaceState|null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [showBigImage, setShowBigImage] = useState(false);
+  const [showBigImage, setShowBigImage] = useState(false); // ★大きな画像用
+  
   useEffect(()=>{setIsMounted(true);},[]);
   const s=st;
   const set=<K extends keyof FaceState>(k:K,v:FaceState[K])=>{setPrev(st);setSt(s=>({...s,[k]:v}));};
   const undo=()=>{if(prev){setSt(prev);setPrev(null);}};
+  
   const saveImage = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -397,6 +399,7 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
+  // 描画ロジック (useEffectの中)
   useEffect(()=>{
     if(!isMounted) return;
     const canvas=canvasRef.current, ctx=canvas?.getContext("2d");
@@ -432,26 +435,13 @@ export default function Home() {
     drawFaceShadow(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW,sk,shadow);
     drawEars(ctx,cx,ty,fw,mH,sk,st.earSize,st.earY,eraW,faceW,fH);
 
-    const lex=cx-40-st.eyeDist, rex=cx+40+st.eyeDist;
-    const lbx=cx-40-st.browDist, rbx=cx+40+st.browDist;
-    const browBaseY=midStart+mH*0.1+st.browY;
     const eyeY_abs=midStart+mH*0.38-st.eyeVert;
     const noseY_abs=midStart+mH*0.82;
     const mouthY_abs=midEnd+st.mouthVert;
 
-    const sColor=hr(st.eyeShadowColor);
-    for (const xs of [-1,1] as const) {
-      const ex=cx+xs*40+xs*st.eyeDist, ew=13.5*st.eyeW, eh=5.8*st.eyeH;
-      ctx.save(); ctx.beginPath(); ctx.rect(ex-ew*1.5,eyeY_abs-eh*5,ew*3,eh*5); ctx.clip();
-      const shadowW=ew*st.eyeShadowW;
-      const shadowH=4+st.eyeShadowH*14;
-      const centerY=eyeY_abs-shadowH*0.35;
-      const esG=ctx.createRadialGradient(ex,centerY,0,ex,centerY,Math.max(shadowW,shadowH));
-      esG.addColorStop(0,rga(sColor,0.42)); esG.addColorStop(1,rga(sColor,0));
-      ctx.fillStyle=esG; ctx.beginPath(); ctx.ellipse(ex,centerY,shadowW,shadowH,0,0,Math.PI*2); ctx.fill();
-      ctx.restore();
-    }
-
+    // まゆげ
+    const lbx=cx-40-st.browDist, rbx=cx+40+st.browDist;
+    const browBaseY=midStart+mH*0.1+st.browY;
     drawEyebrow(ctx,lbx,-1,browBaseY,st.browW,st.browAngle,st.browT,st.browDens,st.browShape,st.browColor);
     drawEyebrow(ctx,rbx, 1,browBaseY,st.browW,st.browAngle,st.browT,st.browDens,st.browShape,st.browColor);
 
@@ -460,6 +450,7 @@ export default function Home() {
       const innerY=sv===-1?-st.headAng:-st.tailAng;
       const outerY=sv===-1?-st.tailAng:-st.headAng;
 
+      // 白目
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(ex-ew,eyeY_abs+innerY*0.5);
@@ -469,26 +460,25 @@ export default function Home() {
       const sG=ctx.createRadialGradient(ex,eyeY_abs-1,1,ex,eyeY_abs,ew*1.05);
       sG.addColorStop(0,"#faf7f3"); sG.addColorStop(1,"#e8e2d8");
       ctx.fillStyle=sG; ctx.fill();
+      
+      // 瞳
       const iC=hr(st.irisColor), iCD=drk(iC,40), iCL=lit(iC,22);
       const iG=ctx.createRadialGradient(ex,eyeY_abs-st.irisR*0.2,st.irisR*0.05,ex,eyeY_abs,st.irisR);
       iG.addColorStop(0,rga(iCL,0.88)); iG.addColorStop(0.3,rga(iC)); iG.addColorStop(0.72,rga(iCD)); iG.addColorStop(1,rga(drk(iC,60)));
       ctx.fillStyle=iG; ctx.beginPath(); ctx.ellipse(ex,eyeY_abs,st.irisR*0.84,st.irisR,0,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle="rgba(0,0,0,0.12)"; ctx.lineWidth=0.4;
-      for (let i=0;i<12;i++) { const a=(i/12)*Math.PI*2; ctx.beginPath(); ctx.moveTo(ex+Math.cos(a)*st.irisR*0.2,eyeY_abs+Math.sin(a)*st.irisR*0.2); ctx.lineTo(ex+Math.cos(a)*st.irisR*0.82,eyeY_abs+Math.sin(a)*st.irisR*0.82); ctx.stroke(); }
-      ctx.strokeStyle=rga(drk(iC,65),0.5); ctx.lineWidth=1.1;
-      ctx.beginPath(); ctx.ellipse(ex,eyeY_abs,st.irisR*0.84,st.irisR,0,0,Math.PI*2); ctx.stroke();
+      
+      // 瞳孔とハイライト
       const pG=ctx.createRadialGradient(ex,eyeY_abs,0,ex,eyeY_abs,st.pupilR);
       pG.addColorStop(0,"#000"); pG.addColorStop(0.78,"#040201"); pG.addColorStop(1,"rgba(4,2,1,0)");
       ctx.fillStyle=pG; ctx.beginPath(); ctx.ellipse(ex,eyeY_abs,st.pupilR,st.pupilR*1.06,0,0,Math.PI*2); ctx.fill();
       ctx.fillStyle="rgba(255,255,255,0.9)"; ctx.beginPath(); ctx.ellipse(ex-st.irisR*0.3,eyeY_abs-st.irisR*0.34,st.irisR*0.21,st.irisR*0.16,-0.3,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle="rgba(255,255,255,0.42)"; ctx.beginPath(); ctx.ellipse(ex+st.irisR*0.22,eyeY_abs+st.irisR*0.19,st.irisR*0.1,st.irisR*0.08,0.3,0,Math.PI*2); ctx.fill();
       ctx.restore();
 
+      // アイライン
       ctx.strokeStyle="rgba(14,6,3,0.88)"; ctx.lineWidth=1.7; ctx.lineCap="round";
       ctx.beginPath(); ctx.moveTo(ex-ew,eyeY_abs+innerY*0.5); ctx.bezierCurveTo(ex-ew*0.42,eyeY_abs-eh*1.12,ex+ew*0.3,eyeY_abs-eh*1.26,ex+ew,eyeY_abs+outerY*0.5); ctx.stroke();
-      ctx.strokeStyle="rgba(14,6,3,0.22)"; ctx.lineWidth=0.62;
-      ctx.beginPath(); ctx.moveTo(ex+ew,eyeY_abs+outerY*0.5); ctx.bezierCurveTo(ex+ew*0.38,eyeY_abs+eh*0.76,ex-ew*0.18,eyeY_abs+eh*0.76,ex-ew,eyeY_abs+innerY*0.5); ctx.stroke();
 
+      // 二重
       if (st.dblType>0&&st.dblDepth>0) {
         const alpha=0.18+st.dblDepth*0.45;
         ctx.strokeStyle=`rgba(28,10,4,${alpha})`; ctx.lineWidth=0.8+st.dblDepth*0.45; ctx.lineCap="round";
@@ -503,53 +493,48 @@ export default function Home() {
         ctx.stroke();
       }
 
-if (st.tearBag>0&&st.tearBagSize>0) {
+      // ★涙袋（目頭までしっかり塗る版）
+      if (st.tearBag>0&&st.tearBagSize>0) {
         if (st.tearBagColor !== "skin") {
           const tbC = hr(st.tearBagColor);
           const tbSize = st.tearBagSize;
           const tbAlpha = st.tearBagColorAlpha;
-          
           ctx.save();
           ctx.beginPath();
-          
-          const startX = ex + ew; // 目尻
-          const startY = eyeY_abs + outerY * 0.5;
-          const endX = ex - ew;   // 目頭
-          const endY = eyeY_abs + innerY * 0.5;
-
-          // ① 目の下のライン
+          const startX = ex + ew, startY = eyeY_abs + outerY * 0.5;
+          const endX = ex - ew, endY = eyeY_abs + innerY * 0.5;
           ctx.moveTo(startX, startY);
           ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76, ex-ew*0.18, eyeY_abs+eh*0.76, endX, endY);
-          
-          // ② 【ここが重要！】目頭の「縦の隙間」を強制的に埋める
-          // 目頭の端っこで、目のラインから真下の涙袋の線まで「垂直に」線を引く
-          ctx.lineTo(endX, endY + tbSize); 
-
-          // ③ 涙袋の膨らみライン（下側）
-          // 制御点を調整して、目頭側のボリュームを維持したまま目尻へ繋ぐ
+          ctx.lineTo(endX, endY + tbSize); // 垂直な壁！
           ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+tbSize*1.6, ex+ew*0.38, eyeY_abs+eh*0.76+tbSize*1.6, startX, startY+tbSize*1.0);
           ctx.closePath();
-          
-          // グラデーション（下から上へ）
-          const gradStartY = eyeY_abs + eh*0.76 + tbSize*1.2;
-          const gradEndY = eyeY_abs + eh*0.3; // 目の際までしっかり色が届くように調整
-          
-          const tbG = ctx.createLinearGradient(ex, gradStartY, ex, gradEndY);
-          tbG.addColorStop(0, rga(tbC, tbAlpha)); 
-          tbG.addColorStop(1, rga(tbC, 0)); 
-
-          ctx.fillStyle = tbG;
-          ctx.fill();
-          ctx.restore();
+          const tbG = ctx.createLinearGradient(ex, eyeY_abs + eh*0.76 + tbSize*1.2, ex, eyeY_abs + eh*0.3);
+          tbG.addColorStop(0, rga(tbC, tbAlpha)); tbG.addColorStop(1, rga(tbC, 0));
+          ctx.fillStyle = tbG; ctx.fill(); ctx.restore();
         }
-
-        // --- 影の線 ---
-        ctx.strokeStyle=`rgba(28,10,4,${st.tearBagAlpha})`;
-        ctx.lineWidth=0.5+st.tearBagAlpha*0.7; ctx.lineCap="round";
-        ctx.beginPath();
-        ctx.moveTo(ex+ew, eyeY_abs+outerY*0.5+st.tearBagSize*0.8);
+        ctx.strokeStyle=`rgba(28,10,4,${st.tearBagAlpha})`; ctx.lineWidth=0.5+st.tearBagAlpha*0.7; ctx.lineCap="round";
+        ctx.beginPath(); ctx.moveTo(ex+ew, eyeY_abs+outerY*0.5+st.tearBagSize*0.8);
         ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76+st.tearBagSize, ex-ew*0.18, eyeY_abs+eh*0.76+st.tearBagSize, ex-ew, eyeY_abs+innerY*0.5+st.tearBagSize);
         ctx.stroke();
+      }
+
+      // まつ毛
+      const lashN=14;
+      for (let i=0;i<lashN;i++) {
+        const rawT=i/(lashN-1), zoneT=sv===-1?rawT:1-rawT;
+        let lenM:number, densM:number;
+        if (zoneT<0.33){const f=zoneT/0.33;lenM=st.lashLenI*(1-f)+st.lashLenC*f;densM=st.lashDensI*(1-f)+st.lashDensC*f;}
+        else if (zoneT<0.67){const f=(zoneT-0.33)/0.34;lenM=st.lashLenC*(1-f)+st.lashLenO*f;densM=st.lashDensC*(1-f)+st.lashDensO*f;}
+        else{lenM=st.lashLenO;densM=st.lashDensO;}
+        if (densM<0.12) continue;
+        const lx=ex-ew+rawT*ew*2,t3=rawT,mt=1-t3;
+        const p0y=eyeY_abs+innerY*0.5,c1y=eyeY_abs-eh*1.12,c2y=eyeY_abs-eh*1.26,p3y=eyeY_abs+outerY*0.5;
+        const ly=mt*mt*mt*p0y+3*mt*mt*t3*c1y+3*mt*t3*t3*c2y+t3*t3*t3*p3y;
+        const baseLen=(2.0+Math.sin(rawT*Math.PI)*3.0)*st.eyeH,len=baseLen*lenM,spread=(rawT-0.5)*0.52,ang=-Math.PI/2+spread;
+        ctx.strokeStyle=`rgba(8,3,1,${Math.min(0.9,(0.52+Math.sin(rawT*Math.PI)*0.3))*densM})`;
+        ctx.lineWidth=(0.55+Math.sin(rawT*Math.PI)*0.5)*Math.max(0.3,densM); ctx.lineCap="round";
+        ctx.beginPath(); ctx.moveTo(lx,ly);
+        ctx.bezierCurveTo(lx+Math.cos(ang-0.08)*len*0.28,ly+Math.sin(ang-0.08)*len*0.42,lx+Math.cos(ang+0.18)*len*0.58,ly+Math.sin(ang+0.18)*len*0.78,lx+Math.cos(ang+0.30)*len*0.66,ly+Math.sin(ang+0.30)*len); ctx.stroke();
       }
     }
 
@@ -565,43 +550,41 @@ if (st.tearBag>0&&st.tearBagSize>0) {
 
   },[st,isMounted]);
 
-return (
+  return (
     <div style={{
       display: "flex",
       flexDirection: (isMounted && window.innerWidth < 768) ? "column" : "row",
       height: "100vh",
-      overflow: "hidden", // 全体は固定して、中身だけスクロールさせる
+      overflow: "hidden", 
       background: "#edeae5",
       fontFamily: "'Georgia',serif"
     }}>
-      {/* 【上】：キャンバスエリア（スマホの時は高さを抑える） */}
+      {/* 【上】：プレビューエリア */}
       <div style={{
-        flex: (isMounted && window.innerWidth < 768) ? "0 0 auto" : "1", // スマホなら中身に合わせる
+        flex: (isMounted && window.innerWidth < 768) ? "0 0 auto" : "1",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: (isMounted && window.innerWidth < 768) ? "10px 20px" : "32px 20px", // スマホなら上下の隙間を削る
+        padding: (isMounted && window.innerWidth < 768) ? "10px 20px" : "32px 20px",
         background: "#f9f6f2",
         borderBottom: "1px solid #ddd"
       }}>
         <div style={{fontSize:"8px",letterSpacing:"3px",color:"#ccc",textTransform:"uppercase",marginBottom:"6px"}}>Preview</div>
-        
-        {/* キャンバスの設定 */}
-<canvas 
-  ref={canvasRef} 
-  width={300} 
-  height={420} 
-  onClick={() => setShowBigImage(true)} // ★クリックしたらモーダルを開く
-  style={{
-    borderRadius:"6px",
-    background:"#f9f6f2",
-    boxShadow:"0 5px 25px rgba(0,0,0,0.1)",
-    maxWidth: (isMounted && window.innerWidth < 768) ? "65%" : "100%", 
-    height: "auto",
-    cursor: "zoom-in" // ★カーソルを虫眼鏡マークに
-}} />
-
+        <canvas 
+          ref={canvasRef} 
+          width={300} 
+          height={420} 
+          onClick={() => setShowBigImage(true)} // ★クリックで大きく表示
+          style={{
+            borderRadius:"6px",
+            background:"#f9f6f2",
+            boxShadow:"0 5px 25px rgba(0,0,0,0.1)",
+            maxWidth: (isMounted && window.innerWidth < 768) ? "65%" : "100%", 
+            height: "auto",
+            cursor: "zoom-in"
+          }} 
+        />
         <div style={{display:"flex",gap:"10px",marginTop:"10px",minHeight:"37px"}}>
           {isMounted && (
             <>
@@ -612,48 +595,44 @@ return (
         </div>
       </div>
 
-      {/* 【下】：操作パネルエリア（ここを広げる！） */}
+      {/* 【下】：操作パネル */}
       <div style={{
-        flex: "1", // 残りのスペースを全部使う
+        flex: "1",
         background: "#0d0b09",
         color: "#e2d9cc",
         padding: "20px",
-        overflowY: "auto", // ここだけスクロールさせる
+        overflowY: "auto",
         WebkitOverflowScrolling: "touch"
       }}>
         <div style={{marginBottom:"15px",paddingLeft:"12px"}}>
           <h2 style={{fontSize:"13px",letterSpacing:"4px",color:"#c8a97e",margin:0}}>DESIGNER</h2>
         </div>
-        
         <div style={{display:"flex",flexDirection:"column",gap:"8px",maxWidth:"480px"}}>
-
           <Sec title="顔">
-            <Sld label="横幅"       v={s.faceW}     mn={0.72} mx={1.3}  st={0.02} fn={v=>set("faceW",v)} />
-            <Sld label="縦幅"       v={s.faceH}     mn={0.5}  mx={1.6}  st={0.02} fn={v=>set("faceH",v)} />
-            <Sld label="額の高さ"   v={s.foreheadH} mn={20}   mx={100}  st={1}    fn={v=>set("foreheadH",v)} />
-            <Sld label="エラの張り" v={s.eraW}      mn={-0.3} mx={0.4}  st={0.03} fn={v=>set("eraW",v)} />
-            <Sld label="顎の長さ"   v={s.chinLen}   mn={0}    mx={60}   st={1}    fn={v=>set("chinLen",v)} />
-            <Sld label="顎の太さ"   v={s.chinW}     mn={0}    mx={65}   st={1}    fn={v=>set("chinW",v)} />
+            <Sld label="横幅" v={s.faceW} mn={0.72} mx={1.3} st={0.02} fn={v=>set("faceW",v)} />
+            <Sld label="縦幅" v={s.faceH} mn={0.5} mx={1.6} st={0.02} fn={v=>set("faceH",v)} />
+            <Sld label="額の高さ" v={s.foreheadH} mn={20} mx={100} st={1} fn={v=>set("foreheadH",v)} />
+            <Sld label="エラの張り" v={s.eraW} mn={-0.3} mx={0.4} st={0.03} fn={v=>set("eraW",v)} />
+            <Sld label="顎の長さ" v={s.chinLen} mn={0} mx={60} st={1} fn={v=>set("chinLen",v)} />
+            <Sld label="顎の太さ" v={s.chinW} mn={0} mx={65} st={1} fn={v=>set("chinW",v)} />
           </Sec>
-
           <Sec title="耳">
             <Sld label="大きさ" v={s.earSize} mn={0.3} mx={2.0} st={0.05} fn={v=>set("earSize",v)} />
-            <Sld label="高さ"   v={s.earY}   mn={-30} mx={30}  st={1}    fn={v=>set("earY",v)} />
+            <Sld label="高さ" v={s.earY} mn={-30} mx={30} st={1} fn={v=>set("earY",v)} />
           </Sec>
-
           <Sec title="目">
-            <Sld label="横幅"      v={s.eyeW}    mn={0}   mx={1.75} st={0.05} fn={v=>set("eyeW",v)} />
-            <Sld label="縦幅"      v={s.eyeH}    mn={0}   mx={1.75} st={0.05} fn={v=>set("eyeH",v)} />
+            <Sld label="横幅" v={s.eyeW} mn={0} mx={1.75} st={0.05} fn={v=>set("eyeW",v)} />
+            <Sld label="縦幅" v={s.eyeH} mn={0} mx={1.75} st={0.05} fn={v=>set("eyeH",v)} />
             <ColorSwatch label="瞳の色" v={s.irisColor} fn={v=>set("irisColor",v)} list={IRIS_COLORS} />
-            <Sld label="瞳の大きさ" v={s.irisR}   mn={0}   mx={10.0} st={0.2}  fn={v=>set("irisR",v)} />
-            <Sld label="瞳孔"      v={s.pupilR}  mn={0}   mx={10.0} st={0.1}  fn={v=>set("pupilR",v)} />
-            <Sld label="目の間隔"  v={s.eyeDist} mn={-25} mx={12}   st={1}    fn={v=>set("eyeDist",v)} />
-            <Sld label="目の高さ"  v={s.eyeVert} mn={-15} mx={25}   st={1}    fn={v=>set("eyeVert",v)} leftLabel="低" rightLabel="高" />
-            <Sld label="目頭角度"  v={s.tailAng} mn={-6}  mx={6}    st={0.2}  fn={v=>set("tailAng",v)} />
-            <Sld label="目尻角度"  v={s.headAng} mn={-6}  mx={6}    st={0.2}  fn={v=>set("headAng",v)} />
+            <Sld label="瞳の大きさ" v={s.irisR} mn={0} mx={10.0} st={0.2} fn={v=>set("irisR",v)} />
+            <Sld label="瞳孔" v={s.pupilR} mn={0} mx={10.0} st={0.1} fn={v=>set("pupilR",v)} />
+            <Sld label="目の間隔" v={s.eyeDist} mn={-25} mx={12} st={1} fn={v=>set("eyeDist",v)} />
+            <Sld label="目の高さ" v={s.eyeVert} mn={-15} mx={25} st={1} fn={v=>set("eyeVert",v)} leftLabel="低" rightLabel="高" />
+            <Sld label="目頭角度" v={s.tailAng} mn={-6} mx={6} st={0.2} fn={v=>set("tailAng",v)} />
+            <Sld label="目尻角度" v={s.headAng} mn={-6} mx={6} st={0.2} fn={v=>set("headAng",v)} />
             <Tabs label="二重" v={s.dblType} opts={["なし","末広","並行"]} fn={v=>set("dblType",v)} />
             {s.dblType>0&&<Ind>
-              <Sld label="二重の幅"  v={s.dblWidth} mn={1.0} mx={8.0} st={0.2}  fn={v=>set("dblWidth",v)} />
+              <Sld label="二重の幅" v={s.dblWidth} mn={1.0} mx={8.0} st={0.2} fn={v=>set("dblWidth",v)} />
               <Sld label="二重の濃さ" v={s.dblDepth} mn={0.1} mx={1.0} st={0.05} fn={v=>set("dblDepth",v)} />
             </Ind>}
             <Sep />
@@ -662,15 +641,14 @@ return (
             <ColorSwatch label="シャドウ色" v={s.eyeShadowColor} fn={v=>set("eyeShadowColor",v)} list={MAKEUP_COLORS} />
             <Tabs label="涙袋" v={s.tearBag} opts={["なし","あり"]} fn={v=>set("tearBag",v)} />
             {s.tearBag>0&&<Ind>
-              <Sld label="涙袋の幅" v={s.tearBagSize}  mn={0.1} mx={8.0} st={0.1}  fn={v=>set("tearBagSize",v)} />
-              <Sld label="涙袋の濃さ" v={s.tearBagAlpha} mn={0.02} mx={0.8} st={0.02} fn={v=>set("tearBagAlpha",v)} />
+              <Sld label="涙袋の幅" v={s.tearBagSize} mn={0.1} mx={8.0} st={0.1} fn={v=>set("tearBagSize",v)} />
+              <Sld label="影の濃さ" v={s.tearBagAlpha} mn={0.02} mx={0.8} st={0.02} fn={v=>set("tearBagAlpha",v)} />
               <TearBagColorSwatch label="カラー" v={s.tearBagColor} fn={v=>set("tearBagColor",v)} />
               {s.tearBagColor !== "skin" && (
-  <Sld label="カラーの濃さ" v={s.tearBagColorAlpha} mn={0} mx={1.0} st={0.05} fn={v=>set("tearBagColorAlpha",v)} />
-)}
-  </Ind>}
+                <Sld label="カラーの濃さ" v={s.tearBagColorAlpha} mn={0} mx={1.0} st={0.05} fn={v=>set("tearBagColorAlpha",v)} />
+              )}
+            </Ind>}
           </Sec>
-
           <Sec title="まつ毛">
             <Sub label="長さ（目尻 / 中央 / 目頭）" />
             <Ind>
@@ -685,56 +663,67 @@ return (
               <Sld label="目頭" v={s.lashDensO} mn={0} mx={1.75} st={0.05} fn={v=>set("lashDensO",v)} />
             </Ind>
           </Sec>
-
           <Sec title="眉毛">
-            <Sld label="高さ"  v={s.browY}     mn={-20} mx={20}  st={0.5}  fn={v=>set("browY",v)} />
-            <Sld label="間隔"  v={s.browDist}  mn={-15} mx={15}  st={1}    fn={v=>set("browDist",v)} />
-            <Sld label="長さ"  v={s.browW}     mn={0}   mx={1.8} st={0.05} fn={v=>set("browW",v)} />
-            <Sld label="角度"  v={s.browAngle} mn={-6}  mx={6}   st={0.3}  fn={v=>set("browAngle",v)} />
-            <Sld label="太さ"  v={s.browT}     mn={0.3} mx={2}   st={0.05} fn={v=>set("browT",v)} />
-            <Sld label="濃さ"  v={s.browDens}  mn={0}   mx={1.5} st={0.05} fn={v=>set("browDens",v)} />
-            <Tabs label="形"   v={s.browShape} opts={["アーチ","並行"]} fn={v=>set("browShape",v)} />
+            <Sld label="高さ" v={s.browY} mn={-20} mx={20} st={0.5} fn={v=>set("browY",v)} />
+            <Sld label="間隔" v={s.browDist} mn={-15} mx={15} st={1} fn={v=>set("browDist",v)} />
+            <Sld label="長さ" v={s.browW} mn={0} mx={1.8} st={0.05} fn={v=>set("browW",v)} />
+            <Sld label="角度" v={s.browAngle} mn={-6} mx={6} st={0.3} fn={v=>set("browAngle",v)} />
+            <Sld label="太さ" v={s.browT} mn={0.3} mx={2} st={0.05} fn={v=>set("browT",v)} />
+            <Sld label="濃さ" v={s.browDens} mn={0} mx={1.5} st={0.05} fn={v=>set("browDens",v)} />
+            <Tabs label="形" v={s.browShape} opts={["アーチ","並行"]} fn={v=>set("browShape",v)} />
             <ColorSwatch label="色" v={s.browColor} fn={v=>set("browColor",v)} list={BROW_COLORS} />
           </Sec>
-
           <Sec title="鼻">
-            <Sld label="鼻筋光沢"    v={s.noseBr}   mn={0}   mx={2}   st={0.05} fn={v=>set("noseBr",v)} />
-            <Sld label="縦幅"        v={s.noseLen}  mn={0}   mx={2}   st={0.05} fn={v=>set("noseLen",v)} />
-            <Sld label="横幅"        v={s.noseWide} mn={0.2} mx={2.5} st={0.05} fn={v=>set("noseWide",v)} />
-            <Sld label="小鼻"        v={s.alaeSize} mn={0}   mx={2.0} st={0.05} fn={v=>set("alaeSize",v)} />
+            <Sld label="鼻筋光沢" v={s.noseBr} mn={0} mx={2} st={0.05} fn={v=>set("noseBr",v)} />
+            <Sld label="縦幅" v={s.noseLen} mn={0} mx={2} st={0.05} fn={v=>set("noseLen",v)} />
+            <Sld label="横幅" v={s.noseWide} mn={0.2} mx={2.5} st={0.05} fn={v=>set("noseWide",v)} />
+            <Sld label="小鼻" v={s.alaeSize} mn={0} mx={2.0} st={0.05} fn={v=>set("alaeSize",v)} />
           </Sec>
-
           <Sec title="口">
-            <Sld label="横幅"      v={s.mouthW}     mn={0}   mx={1.8} st={0.05} fn={v=>set("mouthW",v)} />
-            <Sld label="上唇の厚さ" v={s.upperLipT}  mn={0.3} mx={3}   st={0.05} fn={v=>set("upperLipT",v)} />
-            <Sld label="下唇の厚さ" v={s.lowerLipT}  mn={0.3} mx={5}   st={0.05} fn={v=>set("lowerLipT",v)} />
-            <Sld label="高さ"      v={s.mouthVert}  mn={-15} mx={20}  st={1}    fn={v=>set("mouthVert",v)} />
-            <Sld label="口角"      v={s.cornerLift} mn={-3}  mx={3}   st={0.1}  fn={v=>set("cornerLift",v)} />
+            <Sld label="横幅" v={s.mouthW} mn={0} mx={1.8} st={0.05} fn={v=>set("mouthW",v)} />
+            <Sld label="上唇の厚さ" v={s.upperLipT} mn={0.3} mx={3} st={0.05} fn={v=>set("upperLipT",v)} />
+            <Sld label="下唇の厚さ" v={s.lowerLipT} mn={0.3} mx={5} st={0.05} fn={v=>set("lowerLipT",v)} />
+            <Sld label="高さ" v={s.mouthVert} mn={-15} mx={20} st={1} fn={v=>set("mouthVert",v)} />
+            <Sld label="口角" v={s.cornerLift} mn={-3} mx={3} st={0.1} fn={v=>set("cornerLift",v)} />
             <ColorSwatch label="唇の色" v={s.lipColor} fn={v=>set("lipColor",v)} list={LIP_COLORS} />
           </Sec>
-
           <Sec title="髪">
-            <Tabs label="後ろ"       v={s.hairBack} opts={["ショート","ボブ","ロング","ポニー","刈上げ","マッシュ","ツイン","その他"]} fn={v=>set("hairBack",v)} />
-            <Tabs label="前髪"       v={s.hairBang} opts={["なし","ぱっつん","斜め","センター","流し","シースルー","ウィスプ"]} fn={v=>set("hairBang",v)} />
-            <Sld  label="ボリューム" v={s.hairVol}  mn={0}   mx={1.5} st={0.04} fn={v=>set("hairVol",v)} />
+            <Tabs label="後ろ" v={s.hairBack} opts={["ショート","ボブ","ロング","ポニー","刈上げ","マッシュ","ツイン","その他"]} fn={v=>set("hairBack",v)} />
+            <Tabs label="前髪" v={s.hairBang} opts={["なし","ぱっつん","斜め","センター","流し","シースルー","ウィスプ"]} fn={v=>set("hairBang",v)} />
+            <Sld label="ボリューム" v={s.hairVol} mn={0} mx={1.5} st={0.04} fn={v=>set("hairVol",v)} />
             <ColorSwatch label="髪色" v={s.hairMain} fn={v=>set("hairMain",v)} list={HAIR_COLORS} />
           </Sec>
-
           <Sec title="肌・メイク">
-            <Sld label="肌色" v={s.skinT}  mn={0}   mx={1}   st={0.01} fn={v=>set("skinT",v)} leftLabel="白" rightLabel="暗" />
+            <Sld label="肌色" v={s.skinT} mn={0} mx={1} st={0.01} fn={v=>set("skinT",v)} leftLabel="白" rightLabel="暗" />
             <Sld label="陰影" v={s.shadow} mn={0.1} mx={1.0} st={0.05} fn={v=>set("shadow",v)} />
             <Sep />
-            <Sld label="チーク範囲"  v={s.cheekSize} mn={0.1} mx={2.0} st={0.05} fn={v=>set("cheekSize",v)} />
-            <Sld label="チーク横移動" v={s.cheekX}    mn={-30} mx={30}  st={1}    fn={v=>set("cheekX",v)} />
-            <Sld label="チーク縦移動" v={s.cheekY}    mn={-30} mx={30}  st={1}    fn={v=>set("cheekY",v)} />
+            <Sld label="チーク範囲" v={s.cheekSize} mn={0.1} mx={2.0} st={0.05} fn={v=>set("cheekSize",v)} />
+            <Sld label="チーク横移動" v={s.cheekX} mn={-30} mx={30} st={1} fn={v=>set("cheekX",v)} />
+            <Sld label="チーク縦移動" v={s.cheekY} mn={-30} mx={30} st={1} fn={v=>set("cheekY",v)} />
             <ColorSwatch label="チーク色" v={s.cheekColor} fn={v=>set("cheekColor",v)} list={CHEEK_COLORS} />
           </Sec>
-
         </div>
       </div>
+
+      {/* ★大きなプレビュー画面（モーダル）：ここに置く！ */}
+      {isMounted && showBigImage && (
+        <div 
+          onClick={() => setShowBigImage(false)}
+          style={{
+            position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+            background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center",
+            justifyContent: "center", zIndex: 9999, cursor: "zoom-out"
+          }}
+        >
+          <img 
+            src={canvasRef.current?.toDataURL("image/png")} 
+            alt="Preview Big" 
+            style={{ maxWidth: "95%", maxHeight: "95%", objectFit: "contain", borderRadius: "6px" }}
+          />
+        </div>
+      )}
     </div>
   );
-  
 }
 
 const HAIR_COLORS = [
@@ -862,34 +851,4 @@ function TearBagColorSwatch({label,v,fn}:{label:string;v:string;fn:(s:string)=>v
     </div>
   );
 
-  {isMounted && showBigImage && (
-      <div 
-        onClick={() => setShowBigImage(false)} // 画面のどこをクリックしても閉じる
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          background: "rgba(0,0,0,0.9)", // 真っ黒背景
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 9999, // 一番手前に出す
-          cursor: "zoom-out"
-        }}
-      >
-        <img 
-          src={canvasRef.current?.toDataURL("image/png")} // キャンバスの中身を画像化して表示
-          alt="Preview Big" 
-          style={{
-            maxWidth: "95%",
-            maxHeight: "95%",
-            objectFit: "contain",
-            boxShadow: "0 10px 100px rgba(0,0,0,0.5)",
-            borderRadius: "6px"
-          }}
-        />
-      </div>
-    )}
 }
