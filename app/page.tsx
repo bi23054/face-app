@@ -502,25 +502,30 @@ export default function Home() {
         ctx.stroke();
       }
 
-      if (st.tearBag>0&&st.tearBagSize>0) {
+if (st.tearBag>0&&st.tearBagSize>0) {
+        // --- 1. 涙袋の「色」を塗る（目の下のラインに沿わせる） ---
         if (st.tearBagColor !== "skin") {
           const tbC = hr(st.tearBagColor);
-          const tbFillH = st.tearBagSize * 2.2;
-          const tbY = eyeY_abs + eh * 0.76 + st.tearBagSize * 0.5;
           ctx.save();
           ctx.beginPath();
+          // 目の下のライン
           ctx.moveTo(ex+ew, eyeY_abs+outerY*0.5);
           ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76, ex-ew*0.18, eyeY_abs+eh*0.76, ex-ew, eyeY_abs+innerY*0.5);
-          ctx.lineTo(ex-ew, eyeY_abs+innerY*0.5+st.tearBagSize+tbFillH);
-          ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+st.tearBagSize+tbFillH, ex+ew*0.38, eyeY_abs+eh*0.76+st.tearBagSize+tbFillH, ex+ew, eyeY_abs+outerY*0.5+st.tearBagSize+tbFillH);
-          ctx.closePath(); ctx.clip();
-          const tbG = ctx.createRadialGradient(ex, tbY, 0, ex, tbY, ew*0.9);
-          tbG.addColorStop(0, rga(tbC, st.tearBagAlpha*0.7));
-          tbG.addColorStop(1, rga(tbC, 0));
+          // 涙袋の影のライン（下側）
+          ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+st.tearBagSize*1.5, ex+ew*0.38, eyeY_abs+eh*0.76+st.tearBagSize*1.5, ex+ew, eyeY_abs+outerY*0.5+st.tearBagSize*1.2);
+          ctx.closePath();
+          
+          // 縦方向のグラデーションにして「目の際」を濃くする
+          const tbG = ctx.createLinearGradient(ex, eyeY_abs+eh*0.5, ex, eyeY_abs+eh*0.76+st.tearBagSize);
+          tbG.addColorStop(0, rga(tbC, st.tearBagAlpha * 0.8)); // 目の際はしっかり
+          tbG.addColorStop(1, rga(tbC, 0));                   // 下にいくほど消える
+          
           ctx.fillStyle = tbG;
-          ctx.fillRect(ex-ew-1, eyeY_abs+outerY*0.5, ew*2+2, st.tearBagSize+tbFillH+eh);
+          ctx.fill();
           ctx.restore();
         }
+
+        // --- 2. 涙袋の「影の線」を引く ---
         ctx.strokeStyle=`rgba(28,10,4,${st.tearBagAlpha})`;
         ctx.lineWidth=0.6+st.tearBagAlpha*0.8; ctx.lineCap="round";
         ctx.beginPath();
