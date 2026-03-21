@@ -136,7 +136,7 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
     ctx.bezierCurveTo(cx-sr*0.46,ty+300,cx-sr*0.18,ty+308,cx,ty+308);
     ctx.bezierCurveTo(cx+sr*0.18,ty+308,cx+sr*0.46,ty+300,cx+sr*0.72,ty+278);
     ctx.bezierCurveTo(cx+sr*0.94,ty+248,cx+sr*1.04,ty+195,cx+sr*1.06,ty+148);
-    ctx.bezierCurveTo(cx+sr*1.06,ty+105,ctx+sr*1.02,ty+62,ctx+sr*0.95,ty+30);
+    ctx.bezierCurveTo(cx+sr*1.06,ty+105,cx+sr*1.02,ty+62,cx+sr*0.95,ty+30);
     ctx.bezierCurveTo(cx+sr*0.88,hy+10,cx+sr*0.42,hy-8,cx,hy-6);
     ctx.closePath(); fillHair();
   } else if (style===3) {
