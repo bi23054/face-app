@@ -109,7 +109,6 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
   const hc = hr(mainColor);
   const hcD = drk(hc, 38);
 
-  // --- ★ここからエラー箇所：関数の書き方を修正 ---
   const head = () => {
     ctx.beginPath(); 
     ctx.moveTo(cx, hy - 8);
@@ -132,6 +131,47 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
     ];
     pairs.forEach(([sx, ex, b], i) => strand(sx, hy + 12 + (i % 2) * 8, ex, endY, b, 0.18 + (i % 3) * 0.04, 0.5 + (i % 2) * 0.3));
   };
+
+  // --- グラデーション塗り用の関数 ---
+  const fillHair = (x0: number, y0: number, x1: number, y1: number) => {
+    const g = ctx.createLinearGradient(x0, y0, x1, y1);
+    const hcDD = drk(hc, 65), hcM = drk(hc, 20), hcL = lit(hc, 18);
+    g.addColorStop(0, rga(hcDD)); g.addColorStop(0.18, rga(hcD)); g.addColorStop(0.42, rga(hcM));
+    g.addColorStop(0.65, rga(hcL)); g.addColorStop(0.82, rga(hcM)); g.addColorStop(1, rga(hcDD));
+    ctx.fillStyle = g; ctx.fill();
+  };
+
+  // --- 天使の輪 ---
+  const shine = (hx: number, hy2: number, rx: number, ry: number) => {
+    const g = ctx.createRadialGradient(hx - rx * 0.1, hy2, 1, hx, hy2 + ry * 0.1, rx);
+    g.addColorStop(0, "rgba(255,255,255,0.20)"); g.addColorStop(0.45, "rgba(255,255,255,0.07)"); g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(hx, hy2, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+  };
+
+  // --- スタイル別の分岐 ---
+  if (style === 0) {
+    ctx.beginPath(); ctx.moveTo(cx, hy - 4);
+    ctx.bezierCurveTo(cx - sr * 0.36, hy - 6, cx - sr * 0.82, hy + 10, cx - sr * 0.88, ty + 18);
+    ctx.bezierCurveTo(cx - sr * 0.90, ty + 36, cx - sr * 0.86, ty + 52, cx - sr * 0.76, ty + 64);
+    ctx.bezierCurveTo(cx - sr * 0.54, ty + 74, cx - sr * 0.22, ty + 78, cx, ty + 78);
+    ctx.bezierCurveTo(cx + sr * 0.22, ty + 78, cx + sr * 0.54, ty + 74, cx + sr * 0.76, ty + 64);
+    ctx.bezierCurveTo(cx + sr * 0.86, ty + 52, cx + sr * 0.90, ty + 36, cx + sr * 0.88, ty + 18);
+    ctx.bezierCurveTo(cx + sr * 0.82, hy + 10, cx + sr * 0.36, hy - 6, cx, hy - 4);
+    ctx.closePath(); fillHair(cx, hy, cx, ty + 78);
+    [[cx - sr * 0.2, cx - sr * 0.38, -3], [cx, cx, 2], [cx + sr * 0.2, cx + sr * 0.38, 3]].forEach(([sx, ex, b], i) => strand(sx, hy + 10, ex, ty + 68, b, 0.22, 0.6));
+    shine(cx - sr * 0.08, hy + 16, sr * 0.28, 11);
+  } else if (style === 1) {
+    head(); fillHair(cx, hy, cx, ty + 110); headStrands(ty + 100); shine(cx - sr * 0.1, hy + 20, sr * 0.36, 14);
+  } else if (style === 2) {
+    const bY = ty + 158; head(); fillHair(cx, hy, cx, bY + 8);
+    [[cx - sr * 0.2, cx - sr * 0.32, bY, -10], [cx, cx + sr * 0.04, bY + 5, 4], [cx + sr * 0.2, cx + sr * 0.32, bY, 10]].forEach(([sx, ex, ey, b], i) => strand(sx, hy + 14, ex, ey, b, 0.20, 0.55));
+    shine(cx - sr * 0.1, hy + 22, sr * 0.38, 16);
+  } else {
+    head(); fillHair(cx, hy, cx, ty + 110); headStrands(ty + 100); shine(cx - sr * 0.1, hy + 20, sr * 0.36, 14);
+  }
+
+  const strand = (sx:number, sy:number, ex:number, ey:number, bend:number, a:number, lw:number) => { ctx.save(); ctx.lineCap="round"; ctx.strokeStyle=rga(hcD,a); ctx.lineWidth=lw; ctx.beginPath(); ctx.moveTo(sx,sy); ctx.bezierCurveTo(sx+bend*0.4,sy+(ey-sy)*0.3, ex+bend*0.6,sy+(ey-sy)*0.7, ex,ey); ctx.stroke(); ctx.restore(); };
+
 
   if (style===0) {
     // ベリーショート
@@ -551,7 +591,7 @@ export default function Home() {
     const ty=210-(fH+mH+cH)/2;
     const midStart=ty+fH, midEnd=midStart+mH;
 
-    drawHairBack(ctx,cx,ty,fw,fH,mH,cH,eraW,st.hairBack,st.hairVol,st.hairMain);
+drawHairBack(ctx,cx,ty,fw,fH,mH,cH,eraW,st.hairBack,st.hairVol,st.hairMain);
 
     const faceMidY=ty+(fH+mH+cH)*0.5;
     const g=ctx.createRadialGradient(cx,faceMidY,4,cx,faceMidY,fw*1.5);
@@ -569,7 +609,7 @@ export default function Home() {
       ctx.fillStyle=gCheek; ctx.beginPath(); ctx.ellipse(chX,chY,r,r*0.65,0,0,Math.PI*2); ctx.fill();
     }
     ctx.restore();
-  }
+
 
     drawFaceShadow(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW,sk,shadow);
     drawEars(ctx,cx,ty,fw,mH,sk,st.earSize,st.earY,eraW,faceW,fH);
