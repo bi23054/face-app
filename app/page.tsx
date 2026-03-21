@@ -171,7 +171,7 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
   }
 
   const strand = (sx:number, sy:number, ex:number, ey:number, bend:number, a:number, lw:number) => { ctx.save(); ctx.lineCap="round"; ctx.strokeStyle=rga(hcD,a); ctx.lineWidth=lw; ctx.beginPath(); ctx.moveTo(sx,sy); ctx.bezierCurveTo(sx+bend*0.4,sy+(ey-sy)*0.3, ex+bend*0.6,sy+(ey-sy)*0.7, ex,ey); ctx.stroke(); ctx.restore(); };
-
+}
 
   if (style===0) {
     // ベリーショート
@@ -597,6 +597,7 @@ drawHairBack(ctx,cx,ty,fw,fH,mH,cH,eraW,st.hairBack,st.hairVol,st.hairMain);
     const g=ctx.createRadialGradient(cx,faceMidY,4,cx,faceMidY,fw*1.5);
     g.addColorStop(0,sk.hi); g.addColorStop(0.28,sk.base); g.addColorStop(0.70,sk.mid); g.addColorStop(1,sk.dark);
     ctx.fillStyle=g; ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.fill();
+  
 
     const cColor=hr(st.cheekColor);
     ctx.save(); ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.clip();
