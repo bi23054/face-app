@@ -767,7 +767,7 @@ export default function Home() {
 
     drawNose(ctx,cx,noseY_abs,st.noseLen,st.noseWide,st.alaeSize,st.noseBr,sk,shadow);
     drawMouth(ctx,cx,mouthY_abs,st.mouthW,st.upperLipT,st.lowerLipT,st.cornerLift,st.lipColor);
-    drawBangs(ctx,cx,ty,fw,st.hairVol,st.hairBang,st.hairMain);
+    drawBangs(ctx,cx,ty,fw,fH,st.hairVol,st.hairBang,st.hairMain);
 
     const lightColor=mix("#ffffff",sk.base,skinT*0.5);
     ctx.save(); ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.clip();
