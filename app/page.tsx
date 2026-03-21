@@ -5,7 +5,7 @@ type RGB = { r:number; g:number; b:number };
 const hr  = (h:string): RGB => ({ r:parseInt(h.slice(1,3),16), g:parseInt(h.slice(3,5),16), b:parseInt(h.slice(5,7),16) });
 const rga = (c:RGB|string, a=1) => { const x=typeof c==="string"?hr(c):c; return `rgba(${x.r},${x.g},${x.b},${a})`; };
 const lit = (c:RGB, n:number): RGB => ({ r:Math.min(255,c.r+n), g:Math.min(255,c.g+n), b:Math.min(255,c.b+n) });
-const drk = (c:RGB, n:number): RGB => ({ r:Math.max(0,c.r-n),   g:Math.max(0,c.g-n),   b:Math.max(0,c.b-n) });
+const drk = (c:RGB, n:number): RGB => ({ r:Math.max(0,c.r-n),    b:Math.max(0,c.b-n),   g:Math.max(0,c.g-n) });
 const mix = (a:string, b:string, t:number) => {
   const A=hr(a), B=hr(b);
   const r=Math.round(A.r+(B.r-A.r)*t), g=Math.round(A.g+(B.g-A.g)*t), bl=Math.round(A.b+(B.b-A.b)*t);
@@ -136,7 +136,7 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
     ctx.bezierCurveTo(cx-sr*0.46,ty+300,cx-sr*0.18,ty+308,cx,ty+308);
     ctx.bezierCurveTo(cx+sr*0.18,ty+308,cx+sr*0.46,ty+300,cx+sr*0.72,ty+278);
     ctx.bezierCurveTo(cx+sr*0.94,ty+248,cx+sr*1.04,ty+195,cx+sr*1.06,ty+148);
-    ctx.bezierCurveTo(cx+sr*1.06,ty+105,cx+sr*1.02,ty+62,cx+sr*0.95,ty+30);
+    ctx.bezierCurveTo(cx+sr*1.06,ty+105,ctx+sr*1.02,ty+62,ctx+sr*0.95,ty+30);
     ctx.bezierCurveTo(cx+sr*0.88,hy+10,cx+sr*0.42,hy-8,cx,hy-6);
     ctx.closePath(); fillHair();
   } else if (style===3) {
@@ -380,8 +380,8 @@ export default function Home() {
   const [st, setSt] = useState<FaceState>(DEFAULT_STATE);
   const [prev, setPrev] = useState<FaceState|null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [showBigImage, setShowBigImage] = useState(false); // ★大きな画像用
-  const [zoomScale, setZoomScale] = useState(1.5); // ズーム倍率
+  const [showBigImage, setShowBigImage] = useState(false);
+  const [zoomScale, setZoomScale] = useState(1.5);
 
   useEffect(()=>{setIsMounted(true);},[]);
   const s=st;
@@ -400,7 +400,6 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
-  // 描画ロジック (useEffectの中)
   useEffect(()=>{
     if(!isMounted) return;
     const canvas=canvasRef.current, ctx=canvas?.getContext("2d");
@@ -440,7 +439,6 @@ export default function Home() {
     const noseY_abs=midStart+mH*0.82;
     const mouthY_abs=midEnd+st.mouthVert;
 
-    // まゆげ
     const lbx=cx-40-st.browDist, rbx=cx+40+st.browDist;
     const browBaseY=midStart+mH*0.1+st.browY;
     drawEyebrow(ctx,lbx,-1,browBaseY,st.browW,st.browAngle,st.browT,st.browDens,st.browShape,st.browColor);
@@ -451,7 +449,6 @@ export default function Home() {
       const innerY=sv===-1?-st.headAng:-st.tailAng;
       const outerY=sv===-1?-st.tailAng:-st.headAng;
 
-      // 白目
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(ex-ew,eyeY_abs+innerY*0.5);
@@ -461,25 +458,19 @@ export default function Home() {
       const sG=ctx.createRadialGradient(ex,eyeY_abs-1,1,ex,eyeY_abs,ew*1.05);
       sG.addColorStop(0,"#faf7f3"); sG.addColorStop(1,"#e8e2d8");
       ctx.fillStyle=sG; ctx.fill();
-      
-      // 瞳
       const iC=hr(st.irisColor), iCD=drk(iC,40), iCL=lit(iC,22);
       const iG=ctx.createRadialGradient(ex,eyeY_abs-st.irisR*0.2,st.irisR*0.05,ex,eyeY_abs,st.irisR);
       iG.addColorStop(0,rga(iCL,0.88)); iG.addColorStop(0.3,rga(iC)); iG.addColorStop(0.72,rga(iCD)); iG.addColorStop(1,rga(drk(iC,60)));
       ctx.fillStyle=iG; ctx.beginPath(); ctx.ellipse(ex,eyeY_abs,st.irisR*0.84,st.irisR,0,0,Math.PI*2); ctx.fill();
-      
-      // 瞳孔とハイライト
       const pG=ctx.createRadialGradient(ex,eyeY_abs,0,ex,eyeY_abs,st.pupilR);
       pG.addColorStop(0,"#000"); pG.addColorStop(0.78,"#040201"); pG.addColorStop(1,"rgba(4,2,1,0)");
       ctx.fillStyle=pG; ctx.beginPath(); ctx.ellipse(ex,eyeY_abs,st.pupilR,st.pupilR*1.06,0,0,Math.PI*2); ctx.fill();
       ctx.fillStyle="rgba(255,255,255,0.9)"; ctx.beginPath(); ctx.ellipse(ex-st.irisR*0.3,eyeY_abs-st.irisR*0.34,st.irisR*0.21,st.irisR*0.16,-0.3,0,Math.PI*2); ctx.fill();
       ctx.restore();
 
-      // アイライン
       ctx.strokeStyle="rgba(14,6,3,0.88)"; ctx.lineWidth=1.7; ctx.lineCap="round";
       ctx.beginPath(); ctx.moveTo(ex-ew,eyeY_abs+innerY*0.5); ctx.bezierCurveTo(ex-ew*0.42,eyeY_abs-eh*1.12,ex+ew*0.3,eyeY_abs-eh*1.26,ex+ew,eyeY_abs+outerY*0.5); ctx.stroke();
 
-      // 二重
       if (st.dblType>0&&st.dblDepth>0) {
         const alpha=0.18+st.dblDepth*0.45;
         ctx.strokeStyle=`rgba(28,10,4,${alpha})`; ctx.lineWidth=0.8+st.dblDepth*0.45; ctx.lineCap="round";
@@ -494,54 +485,37 @@ export default function Home() {
         ctx.stroke();
       }
 
-      // ★涙袋（目頭までしっかり塗る版）
       if (st.tearBag>0&&st.tearBagSize>0) {
         const tbSize = st.tearBagSize;
         const startX = ex + ew, startY = eyeY_abs + outerY * 0.5;
         const endX = ex - ew, endY = eyeY_abs + innerY * 0.5;
-
-        // --- 1. まず「カラー」を塗る（範囲を影の線と完全に一致させる） ---
         if (st.tearBagColor !== "skin") {
           const tbC = hr(st.tearBagColor);
           const tbAlpha = st.tearBagColorAlpha;
-          
           ctx.save();
           ctx.beginPath();
-          // ① 目の下のライン
           ctx.moveTo(startX, startY);
           ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76, ex-ew*0.18, eyeY_abs+eh*0.76, endX, endY);
-          
-          // ② 目頭の垂直なつなぎ
           ctx.lineTo(endX, endY + tbSize); 
-
-          // ③ 涙袋の膨らみライン（★ここを影の線の計算と1ミリもズラさない！）
           ctx.bezierCurveTo(ex-ew*0.18, eyeY_abs+eh*0.76+tbSize, ex+ew*0.38, eyeY_abs+eh*0.76+tbSize, startX, startY+tbSize*0.8);
-          
           ctx.closePath();
-          
-          // グラデーション（下から上へ）
           const gradStartY = eyeY_abs + eh*0.76 + tbSize; 
           const gradEndY = eyeY_abs + eh*0.3;
           const tbG = ctx.createLinearGradient(ex, gradStartY, ex, gradEndY);
           tbG.addColorStop(0, rga(tbC, tbAlpha)); 
           tbG.addColorStop(1, rga(tbC, 0)); 
-
           ctx.fillStyle = tbG;
           ctx.fill();
           ctx.restore();
         }
-
-        // --- 2. 最後に「影の線」を上から重ねてフタをする ---
         ctx.strokeStyle=`rgba(28,10,4,${st.tearBagAlpha})`;
         ctx.lineWidth=0.5+st.tearBagAlpha*0.7; ctx.lineCap="round";
         ctx.beginPath();
-        // 下側の境界線をなぞる
         ctx.moveTo(startX, startY+tbSize*0.8);
         ctx.bezierCurveTo(ex+ew*0.38, eyeY_abs+eh*0.76+tbSize, ex-ew*0.18, eyeY_abs+eh*0.76+tbSize, endX, endY+tbSize);
         ctx.stroke();
       }
 
-      // まつ毛
       const lashN=14;
       for (let i=0;i<lashN;i++) {
         const rawT=i/(lashN-1), zoneT=sv===-1?rawT:1-rawT;
@@ -582,7 +556,6 @@ export default function Home() {
       background: "#edeae5",
       fontFamily: "'Georgia',serif"
     }}>
-      {/* 【上】：プレビューエリア */}
       <div style={{
         flex: (isMounted && window.innerWidth < 768) ? "0 0 auto" : "1",
         display: "flex",
@@ -618,7 +591,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 【下】：操作パネル */}
       <div style={{
         flex: "1",
         background: "#0d0b09",
@@ -728,7 +700,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ★最強ズームモーダル */}
       {isMounted && showBigImage && (
         <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.95)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
           <div style={{ position: "absolute", top: "20px", display: "flex", gap: "15px", zIndex: 10000 }}>
@@ -746,7 +717,6 @@ export default function Home() {
   );
 }
 
-// 部品関数
 function Sec({title,children}:{title:string;children:React.ReactNode}) {
   return (
     <div style={{background:"#1a1714",borderRadius:"6px",padding:"10px 12px",border:"1px solid #252018",marginBottom:"8px"}}>
@@ -812,129 +782,10 @@ function TearBagColorSwatch({label,v,fn}:{label:string;v:string;fn:(s:string)=>v
   );
 }
 
-const HAIR_COLORS = [
-  "#060402","#0e0804","#160c04","#1e1006","#2c1608","#3c1e0c",
-  "#3c3028","#102040","#102818","#301848","#502810","#643218",
-  "#7a4020","#8e5028","#a06030","#b07838","#c09050","#D4AF37",
-  "#d0a868","#e0c088","#F3E5AB","#ecd8a8","#f8ecd0","#6a5a48",
-  "#9a8a78","#c0b0a0","#BDC3C7","#7F8C8D","#d8d0c8","#f0ece8",
-  "#601818","#8a2420","#a02030","#a03028","#c84040","#c84838",
-  "#d86040","#e06060","#e08858","#c84878","#e060a0","#f080c0",
-  "#f8a8d8","#ffd0e8","#502878","#7040a8","#9060c8","#b080e0",
-  "#c8a0f0","#183060","#1e4888","#2868b8","#4090d8","#87CEEB",
-  "#70b8f0","#184830","#206840","#308858","#40a870","#2ECC71","#68c898",
-];
-const BROW_COLORS = [
-  "#060402","#0e0804","#1e1006","#3c1e0c","#502810","#643218",
-  "#7a4020","#a06030","#c09050","#d0a868","#e0c088","#f8ecd0",
-  "#3c3028","#6a5a48","#9a8a78","#c0b0a0","#7F8C8D","#d8d0c8",
-  "#601818","#8a2420","#c84040","#c84878","#e060a0",
-  "#102040","#1e4888","#2868b8","#4090d8",
-  "#102818","#206840","#308858","#40a870",
-  "#301848","#7040a8","#9060c8","#b080e0",
-];
-const IRIS_COLORS = [
-  "#100804","#1e1008","#2c1a0c","#402410","#543018","#6a4020",
-  "#183040","#1e4060","#285888","#3870b0","#4890d8","#68a8e8",
-  "#102820","#184030","#206048","#308860","#40a878","#58c890",
-  "#301028","#502040","#703060","#904888","#b068a8",
-  "#282010","#403018","#584228","#705840","#8a7058",
-  "#181818","#303030","#484848","#606060",
-];
-const LIP_COLORS = [
-  "#fce8e4","#f8d0c8","#f0b8b0","#e89888","#d87868","#c85858",
-  "#c04848","#a83838","#903030","#7a2828","#602020",
-  "#e8789a","#d85880","#c03868","#a82050","#901838",
-  "#e89078","#d07058","#b85040","#a04030","#883028",
-  "#f0c0a8","#e8a890","#d88870","#c07050","#a85838",
-  "#4a1828","#6a2038","#8a2848","#a83058",
-  "#302028","#503040","#704050","#905060",
-];
-const MAKEUP_COLORS = [
-  "#a06040","#c05858","#e08870","#f0a0a0","#d07090","#8a3a2a",
-  "#b06080","#e080b0","#f0c0e0","#8040a0","#60208a",
-];
-const CHEEK_COLORS = [
-  "#f0a0a0","#e08870","#d07090","#c05858","#a06040","#f8c0c0",
-  "#ffd0e8","#e8a0c0","#d080a0","#f0d0b0","#e0b090",
-];
-const TEARBAG_COLORS = [
-  "skin",
-  "#f0a0a0","#f8b8b8","#ffc8d0","#ffb0c8","#f090b0",
-  "#e8789a","#d85880","#c03868",
-  "#f0c0e0","#e8a0c8","#d080b0",
-  "#f0d0b0","#e8b890","#d09070",
-  "#c8e0f8","#a8c8f0","#88b0e8",
-];
-
-function Sec({title,children}:{title:string;children:React.ReactNode}) {
-  return (
-    <div style={{background:"#1a1714",borderRadius:"6px",padding:"10px 12px",border:"1px solid #252018"}}>
-      <div style={{fontSize:"10px",fontWeight:"bold",letterSpacing:"2px",color:"#c8a97e",borderLeft:"3px solid #c8a97e",paddingLeft:"8px",marginBottom:"10px",textTransform:"uppercase"}}>{title}</div>
-      <div style={{display:"flex",flexDirection:"column",gap:"7px"}}>{children}</div>
-    </div>
-  );
-}
-function Sep() {
-  return <div style={{borderTop:"1px solid #252018",margin:"2px 0"}} />;
-}
-function Sub({label}:{label:string}) {
-  return <div style={{fontSize:"10px",color:"#6a6258",marginTop:"2px"}}>{label}</div>;
-}
-function Ind({children}:{children:React.ReactNode}) {
-  return <div style={{display:"flex",flexDirection:"column",gap:"5px",paddingLeft:"8px",borderLeft:"2px solid #252018"}}>{children}</div>;
-}
-function Sld({label,v,mn,mx,st,fn,leftLabel,rightLabel}:{label:string;v:number;mn:number;mx:number;st:number;fn:(n:number)=>void;leftLabel?:string;rightLabel?:string;}) {
-  return (
-    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
-      <div style={{width:"78px",fontSize:"10px",color:"#9e9286",flexShrink:0}}>{label}</div>
-      {leftLabel&&<span style={{fontSize:"9px",color:"#6a6258"}}>{leftLabel}</span>}
-      <input type="range" min={mn} max={mx} step={st} value={v} onChange={e=>fn(Number(e.target.value))} style={{flex:1,accentColor:"#c8a97e",cursor:"pointer"}} />
-      {rightLabel&&<span style={{fontSize:"9px",color:"#6a6258"}}>{rightLabel}</span>}
-      <div style={{width:"28px",fontSize:"9px",color:"#6e6258",textAlign:"right"}}>{Math.abs(v)<10&&st<1?v.toFixed(2):Math.round(v)}</div>
-    </div>
-  );
-}
-function Tabs({label,v,opts,fn}:{label:string;v:number;opts:string[];fn:(n:number)=>void}) {
-  return (
-    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
-      <div style={{width:"78px",fontSize:"10px",color:"#9e9286",flexShrink:0}}>{label}</div>
-      <div style={{display:"flex",gap:"3px",flexWrap:"wrap"}}>
-        {opts.map((o,i)=>(
-          <button key={i} onClick={()=>fn(i)} style={{padding:"2px 7px",fontSize:"9px",borderRadius:"10px",border:"none",cursor:"pointer",background:v===i?"#c8a97e":"#2a2520",color:v===i?"#18150f":"#5a5248"}}>{o}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
-function ColorSwatch({label,v,list,fn}:{label:string;v:string;list:string[];fn:(s:string)=>void}) {
-  return (
-    <div style={{display:"flex",alignItems:"flex-start",gap:"6px"}}>
-      <div style={{width:"78px",fontSize:"10px",color:"#9e9286",flexShrink:0,paddingTop:"2px"}}>{label}</div>
-      <div style={{display:"flex",gap:"3px",flexWrap:"wrap",maxWidth:"220px"}}>
-        {list.map(c=>(
-          <div key={c} onClick={()=>fn(c)} title={c} style={{width:"15px",height:"15px",borderRadius:"50%",background:c,cursor:"pointer",border:`2px solid ${v===c?"#c8a97e":"transparent"}`,boxSizing:"border-box",flexShrink:0}} />
-        ))}
-      </div>
-    </div>
-  );
-}
-function TearBagColorSwatch({label,v,fn}:{label:string;v:string;fn:(s:string)=>void}) {
-  return (
-    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
-      <div style={{width:"78px",fontSize:"10px",color:"#9e9286",flexShrink:0}}>{label}</div>
-      <div style={{display:"flex",gap:"3px",flexWrap:"wrap",maxWidth:"220px"}}>
-        <div onClick={()=>fn("skin")} title="スキン（なし）"
-          style={{width:"15px",height:"15px",borderRadius:"50%",cursor:"pointer",
-            border:`2px solid ${v==="skin"?"#c8a97e":"#3a3530"}`,boxSizing:"border-box",flexShrink:0,
-            background:"linear-gradient(135deg,#f0c0a0 50%,#1a1714 50%)"}} />
-        {TEARBAG_COLORS.filter(c=>c!=="skin").map(c=>(
-          <div key={c} onClick={()=>fn(c)} title={c}
-            style={{width:"15px",height:"15px",borderRadius:"50%",background:c,cursor:"pointer",
-              border:`2px solid ${v===c?"#c8a97e":"transparent"}`,boxSizing:"border-box",flexShrink:0}} />
-        ))}
-      </div>
-    </div>
-  );
-
-}
+const HAIR_COLORS = ["#060402","#0e0804","#160c04","#1e1006","#2c1608","#3c1e0c","#3c3028","#102040","#102818","#301848","#502810","#643218","#7a4020","#8e5028","#a06030","#b07838","#c09050","#D4AF37","#d0a868","#e0c088","#F3E5AB","#ecd8a8","#f8ecd0","#6a5a48","#9a8a78","#c0b0a0","#BDC3C7","#7F8C8D","#d8d0c8","#f0ece8","#601818","#8a2420","#a02030","#a03028","#c84040","#c84838","#d86040","#e06060","#e08858","#c84878","#e060a0","#f080c0","#f8a8d8","#ffd0e8","#502878","#7040a8","#9060c8","#b080e0","#c8a0f0","#183060","#1e4888","#2868b8","#4090d8","#87CEEB","#70b8f0","#184830","#206840","#308858","#40a870","#2ECC71","#68c898"];
+const BROW_COLORS = ["#060402","#0e0804","#1e1006","#3c1e0c","#502810","#643218","#7a4020","#a06030","#c09050","#d0a868","#e0c088","#f8ecd0","#3c3028","#6a5a48","#9a8a78","#c0b0a0","#7F8C8D","#d8d0c8","#601818","#8a2420","#c84040","#c84878","#e060a0","#102040","#1e4888","#2868b8","#4090d8","#102818","#206840","#308858","#40a870","#301848","#7040a8","#9060c8","#b080e0"];
+const IRIS_COLORS = ["#100804","#1e1008","#2c1a0c","#402410","#543018","#6a4020","#183040","#1e4060","#285888","#3870b0","#4890d8","#68a8e8","#102820","#184030","#206048","#308860","#40a878","#58c890","#301028","#502040","#703060","#904888","#b068a8","#282010","#403018","#584228","#705840","#8a7058","#181818","#303030","#484848","#606060"];
+const LIP_COLORS = ["#fce8e4","#f8d0c8","#f0b8b0","#e89888","#d87868","#c85858","#c04848","#a83838","#903030","#7a2828","#602020","#e8789a","#d85880","#c03868","#a82050","#901838","#e89078","#d07058","#b85040","#a04030","#883028","#f0c0a0","#e8a890","#d88870","#c07050","#a85838","#4a1828","#6a2038","#8a2848","#a83058","#302028","#503040","#704050","#905060"];
+const MAKEUP_COLORS = ["#a06040","#c05858","#e08870","#f0a0a0","#d07090","#8a3a2a","#b06080","#e080b0","#f0c0e0","#8040a0","#60208a"];
+const CHEEK_COLORS = ["#f0a0a0","#e08870","#d07090","#c05858","#a06040","#f8c0c0","#ffd0e8","#e8a0c0","#d080a0","#f0d0b0","#e0b090"];
+const TEARBAG_COLORS = ["skin","#f0a0a0","#f8b8b8","#ffc8d0","#ffb0c8","#f090b0","#e8789a","#d85880","#c03868","#f0c0e0","#e8a0c8","#d080b0","#f0d0b0","#e8b890","#d09070","#c8e0f8","#a8c8f0","#88b0e8"];
