@@ -694,6 +694,8 @@ return (
             <Sep />
             <Sld label="シャドウ横幅" v={s.eyeShadowW} mn={0} mx={2.0} st={0.05} fn={v=>set("eyeShadowW",v)} />
             <Sld label="シャドウ縦幅" v={s.eyeShadowH} mn={0} mx={2.0} st={0.05} fn={v=>set("eyeShadowH",v)} />
+            <Sld label="影横移動" v={s.eyeShadowX} mn={-20} mx={20} st={1} fn={v=>set("eyeShadowX",v)} />
+            <Sld label="影縦移動" v={s.eyeShadowY} mn={-20} mx={20} st={1} fn={v=>set("eyeShadowY",v)} />
             <ColorSwatch label="シャドウ色" v={s.eyeShadowColor} fn={v=>set("eyeShadowColor",v)} list={MAKEUP_COLORS} />
             <Tabs label="涙袋" v={s.tearBag} opts={["なし","あり"]} fn={v=>set("tearBag",v)} />
             {s.tearBag>0&&<Ind>
