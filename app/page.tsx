@@ -446,29 +446,42 @@ export default function Home() {
     const noseY_abs=midStart+mH*0.82;
     const mouthY_abs=midEnd+st.mouthVert;
 
-// アイシャドウ描画（ここが抜けてた！）
+// ★アイシャドウ描画（目のラインに沿わせる版）
     if (st.eyeShadowW > 0 || st.eyeShadowH > 0) {
       const sColor = hr(st.eyeShadowColor);
-      for (const xs of [-1, 1] as const) {
-        // xsをかけることで左右対称に動くように修正済み
-        const ex=cx+xs*40+xs*st.eyeDist+xs*st.eyeShadowX, ew=13.5*st.eyeW, eh=5.8*st.eyeH; 
-        const ey = ty + fH + mH * 0.38 - st.eyeVert + st.eyeShadowY;
-        const shadowW = Math.max(1, (13.5 * st.eyeW) * st.eyeShadowW);
-        const shadowH = Math.max(1, 4 + st.eyeShadowH * 14);
-        
-        ctx.save();
-        // 目の周りだけ塗るようにクリップ（これがないと顔全体に広がる）
-        ctx.beginPath();
-        ctx.rect(ex - shadowW * 1.5, ey - shadowH, shadowW * 3, shadowH * 2);
-        ctx.clip();
+      
+      // 密度（W）と太さ（H）から、線のアルファと太さを決める
+      const shadowAlpha = st.eyeShadowW * 0.45; // Wで濃さを調整
+      const shadowStrokeW = 1.0 + st.eyeShadowH * 24; // Hで太さを調整
 
-        const esG = ctx.createRadialGradient(ex, ey - 5, 0, ex, ey - 5, shadowW * 1.2);
-        esG.addColorStop(0, rga(sColor, 0.42));
-        esG.addColorStop(1, rga(sColor, 0));
-        ctx.fillStyle = esG;
+      for (const xs of [-1, 1] as const) {
+        // 1. 目の基本位置（まつ毛描画と同じ ex）
+        const ex = cx + xs * 40 + xs * st.eyeDist; 
+        const ew = 13.5 * st.eyeW;
+        const eh = 5.8 * st.eyeH;
+        const innerY=xs===-1?-st.headAng:-st.tailAng;
+        const outerY=xs===-1?-st.tailAng:-st.headAng;
+        const eyeY_abs=midStart+mH*0.38-st.eyeVert;
+
+        // 2. アイシャドウ専用の移動（X, Y）
+        const esx = ex + xs * st.eyeShadowX;
+        const esy = eyeY_abs + st.eyeShadowY;
+
+        ctx.save();
+        // 3. ★ここがポイント：塗りつぶしじゃなくて「線（stroke）」にする
+        ctx.strokeStyle = rga(sColor, shadowAlpha);
+        ctx.lineWidth = shadowStrokeW;
+        ctx.lineCap = "round"; // 線の端を丸くして自然に
+        
+        // 4. ★さらに自然にするために、少し「ぼかし」を入れる
+        ctx.filter = `blur(${Math.max(0.5, st.eyeShadowH * 1.5)}px)`;
+
+        // 5. ★目の「上のライン」の計算式をそのままコピーして描く
         ctx.beginPath();
-        ctx.ellipse(ex, ey - 5, shadowW, shadowH, 0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(esx-ew, esy+innerY*0.5);
+        ctx.bezierCurveTo(esx-ew*0.42, esy-eh*1.12, esx+ew*0.3, esy-eh*1.26, esx+ew, esy+outerY*0.5);
+        ctx.stroke(); // 線を引く！
+        
         ctx.restore();
       }
     }
