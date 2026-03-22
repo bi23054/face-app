@@ -371,7 +371,7 @@ const DEFAULT_STATE: FaceState = {
   dblType:1, dblDepth:4.05, dblWidth:0.35,
   lashLenI:1.50, lashLenC:0.70, lashLenO:0.70,
   lashDensI:1.10, lashDensC:1.00, lashDensO:1.00,
-  eyeShadowW:0, eyeShadowH:0, eyeShadowX:0, eyeShadowY:0, eyeShadowColor:"#a06040",
+  eyeShadowW:1, eyeShadowH:1, eyeShadowX:1, eyeShadowY:1, eyeShadowColor:"#a06040",
   tearBag:1, tearBagSize:3.5, tearBagAlpha:0.3, tearBagColor:"skin", tearBagColorAlpha: 0.5,
   browY:2.50, browDist:-7, browW:0.80, browAngle:-0.60, browT:2.00, browDens:1.50, browShape:1, browColor:"#1a0f06",
   noseBr:1.2, noseLen:1.0, noseWide:1.0, alaeSize:1.0,
@@ -472,8 +472,6 @@ export default function Home() {
         ctx.rect(esx - ew * 1.5, esy - eh * 3, ew * 3, eh * 3); // 目の上半分を囲う箱
         ctx.clip(); 
 
-        ctx.strokeStyle = rga(sColor, shadowAlpha);
-
         // 3. ★ここがポイント：塗りつぶしじゃなくて「線（stroke）」にする
         ctx.strokeStyle = rga(sColor, shadowAlpha);
         ctx.lineWidth = shadowStrokeW;
@@ -485,10 +483,15 @@ export default function Home() {
         // 5. ★目の「上のライン」の計算式をそのままコピーして描く
         ctx.beginPath();
         ctx.moveTo(esx-ew, esy+innerY*0.5);
-        ctx.bezierCurveTo(esx-ew*0.42, esy-eh*1.12, esx+ew*0.3, esy-eh*1.26, esx+ew, esy+outerY*0.5);
-        ctx.stroke(); // 線を引く！
-        
-        ctx.restore();
+        const tailExtension = 13.5 * st.eyeShadowW; 
+        const targetX = esx + ew + tailExtension;
+
+        ctx.bezierCurveTo(
+          esx - ew * 0.42, esy - eh * 1.12, 
+          esx + ew * 0.3 + tailExtension, esy - eh * 1.26, // 制御点も一緒に外へ
+          targetX, esy + outerY * 0.5 // 終着点（目尻）を外へ！
+        );
+        ctx.stroke();
       }
     }
 
