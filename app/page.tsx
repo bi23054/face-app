@@ -451,7 +451,7 @@ export default function Home() {
       const sColor = hr(st.eyeShadowColor);
       for (const xs of [-1, 1] as const) {
         // xsをかけることで左右対称に動くように修正済み
-        const ex = cx + xs * 40 + xs * st.eyeDist + xs * st.eyeShadowX; 
+        const ex=cx+sv*40+sv*st.eyeDist+sv*st.eyeShadowX, ew=13.5*st.eyeW, eh=5.8*st.eyeH; 
         const ey = ty + fH + mH * 0.38 - st.eyeVert + st.eyeShadowY;
         const shadowW = Math.max(1, (13.5 * st.eyeW) * st.eyeShadowW);
         const shadowH = Math.max(1, 4 + st.eyeShadowH * 14);
@@ -480,7 +480,7 @@ export default function Home() {
     drawEyebrow(ctx,rbx, 1,browBaseY,st.browW,st.browAngle,st.browT,st.browDens,st.browShape,st.browColor);
 
     for (const sv of [-1,1] as const) {
-      const ex=cx+xs*40+xs*st.eyeDist+xs*st.eyeShadowX, ew=13.5*st.eyeW, eh=5.8*st.eyeH;
+      const ex = cx + sv * 40 + sv * st.eyeDist; ew=13.5*st.eyeW, eh=5.8*st.eyeH;
       const innerY=sv===-1?-st.headAng:-st.tailAng;
       const outerY=sv===-1?-st.tailAng:-st.headAng;
 
