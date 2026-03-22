@@ -371,7 +371,7 @@ const DEFAULT_STATE: FaceState = {
   dblType:1, dblDepth:4.05, dblWidth:0.35,
   lashLenI:1.50, lashLenC:0.70, lashLenO:0.70,
   lashDensI:1.10, lashDensC:1.00, lashDensO:1.00,
-  eyeShadowW:0, eyeShadowH:0, eyeShadowColor:"#a06040",
+  eyeShadowW:0, eyeShadowH:0, eyeShadowX:0, eyeShadowY:0, eyeShadowColor:"#a06040",
   tearBag:1, tearBagSize:3.5, tearBagAlpha:0.3, tearBagColor:"skin", tearBagColorAlpha: 0.5,
   browY:2.50, browDist:-7, browW:0.80, browAngle:-0.60, browT:2.00, browDens:1.50, browShape:1, browColor:"#1a0f06",
   noseBr:1.2, noseLen:1.0, noseWide:1.0, alaeSize:1.0,
