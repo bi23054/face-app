@@ -254,9 +254,14 @@ function drawEyebrow(ctx:CanvasRenderingContext2D, bx:number, side:number, baseY
       const baseAng=(-Math.PI*0.45)*(1-sleepT);
       const currentAng=baseAng+(targetAngle*0.2);
       const shake=Math.sin(i*0.5+lIdx*10), taperFactor=1.0-(t*0.7);
-      const headFade=0.6+0.4*smoothstep(0,0.2,t), opacityFade=0.7+0.3*smoothstep(0,0.15,t);
-      const thick=bT*ly.thick*taperFactor, len=bT*ly.len*taperFactor*(3.5+shake*0.4)*headFade;
-      ctx.strokeStyle=rga(hc,bDens*ly.alpha*taperFactor*opacityFade); ctx.lineWidth=thick;
+      
+      // ★ここを修正：眉頭(t=0)は全体密度(bDens)に関わらず、さらに薄くする
+      const startFade = 0.35 + 0.65 * smoothstep(0, 0.25, t); 
+      const opacityTaper = taperFactor * startFade;
+      const thick=bT*ly.thick*taperFactor, len=bT*ly.len*taperFactor*(3.5+shake*0.4);
+      
+      // アルファチャネル（透明度）の計算に opacityTaper を適用
+      ctx.strokeStyle=rga(hc,bDens*ly.alpha*opacityTaper); ctx.lineWidth=thick;
       ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx+Math.cos(currentAng)*len,ry+Math.sin(currentAng)*len*0.4); ctx.stroke();
     }
   });
@@ -313,8 +318,9 @@ function drawMouth(ctx:CanvasRenderingContext2D, cx:number, my:number, mw:number
   const lC=hr(lipColor), lCL=lit(lC,20), lCD=drk(lC,32), lCM=drk(lC,10);
   const upper=(close=false)=>{
     ctx.moveTo(cx-MW,my+1.8+cY);
-    ctx.bezierCurveTo(cx-MW*0.54,my-uH*0.22+cY*0.5,cx-MW*0.22,my-uH,cx-MW*0.09,my-uH*1.2);
-    ctx.bezierCurveTo(cx,my-uH*0.5,cx+MW*0.09,my-uH*1.2,cx+MW*0.22,my-uH);
+    // ★上唇の山を完全対称に再計算（C1xとC2xの値をcxを基準に一致させた）
+    ctx.bezierCurveTo(cx-MW*0.54,my-uH*0.22+cY*0.5,cx-MW*0.20,my-uH,cx-MW*0.09,my-uH*1.2);
+    ctx.bezierCurveTo(cx,my-uH*0.5,cx+MW*0.09,my-uH*1.2,cx+MW*0.20,my-uH);
     ctx.bezierCurveTo(cx+MW*0.54,my-uH*0.22+cY*0.5,cx+MW,my+1.8+cY,cx+MW,my+1.8+cY);
     if (close) { ctx.bezierCurveTo(cx+MW*0.56,my+lH*1.18,cx-MW*0.56,my+lH*1.18,cx-MW,my+1.8+cY); ctx.closePath(); }
   };
