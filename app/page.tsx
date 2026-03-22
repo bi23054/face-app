@@ -446,6 +446,33 @@ export default function Home() {
     const noseY_abs=midStart+mH*0.82;
     const mouthY_abs=midEnd+st.mouthVert;
 
+// アイシャドウ描画（ここが抜けてた！）
+    if (st.eyeShadowW > 0 || st.eyeShadowH > 0) {
+      const sColor = hr(st.eyeShadowColor);
+      for (const xs of [-1, 1] as const) {
+        // xsをかけることで左右対称に動くように修正済み
+        const ex = cx + xs * 40 + xs * st.eyeDist + xs * st.eyeShadowX; 
+        const ey = ty + fH + mH * 0.38 - st.eyeVert + st.eyeShadowY;
+        const shadowW = Math.max(1, (13.5 * st.eyeW) * st.eyeShadowW);
+        const shadowH = Math.max(1, 4 + st.eyeShadowH * 14);
+        
+        ctx.save();
+        // 目の周りだけ塗るようにクリップ（これがないと顔全体に広がる）
+        ctx.beginPath();
+        ctx.rect(ex - shadowW * 1.5, ey - shadowH, shadowW * 3, shadowH * 2);
+        ctx.clip();
+
+        const esG = ctx.createRadialGradient(ex, ey - 5, 0, ex, ey - 5, shadowW * 1.2);
+        esG.addColorStop(0, rga(sColor, 0.42));
+        esG.addColorStop(1, rga(sColor, 0));
+        ctx.fillStyle = esG;
+        ctx.beginPath();
+        ctx.ellipse(ex, ey - 5, shadowW, shadowH, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
     // まゆげ
     const lbx=cx-40-st.browDist, rbx=cx+40+st.browDist;
     const browBaseY=midStart+mH*0.1+st.browY;
@@ -453,7 +480,7 @@ export default function Home() {
     drawEyebrow(ctx,rbx, 1,browBaseY,st.browW,st.browAngle,st.browT,st.browDens,st.browShape,st.browColor);
 
     for (const sv of [-1,1] as const) {
-      const ex=cx+sv*40+sv*st.eyeDist, ew=13.5*st.eyeW, eh=5.8*st.eyeH;
+      const ex=cx+xs*40+xs*st.eyeDist+xs*st.eyeShadowX, ew=13.5*st.eyeW, eh=5.8*st.eyeH;
       const innerY=sv===-1?-st.headAng:-st.tailAng;
       const outerY=sv===-1?-st.tailAng:-st.headAng;
 
