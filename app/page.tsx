@@ -492,6 +492,7 @@ export default function Home() {
           targetX, esy + outerY * 0.5 // 終着点（目尻）を外へ！
         );
         ctx.stroke();
+        ctx.restore();
       }
     }
 
