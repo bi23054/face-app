@@ -352,7 +352,7 @@ type FaceState = {
   dblType:number; dblDepth:number; dblWidth:number;
   lashLenI:number; lashLenC:number; lashLenO:number;
   lashDensI:number; lashDensC:number; lashDensO:number;
-  eyeShadowW:number; eyeShadowH:number; eyeShadowColor:string;
+  eyeShadowW:number; eyeShadowH:number; eyeShadowX:number; eyeShadowY:number; eyeShadowColor:string;
   tearBag:number; tearBagSize:number; tearBagAlpha:number; tearBagColor:string; tearBagColorAlpha: number;
   browY:number; browDist:number; browW:number; browAngle:number; browT:number; browDens:number; browShape:number; browColor:string;
   noseBr:number; noseLen:number; noseWide:number; alaeSize:number;
