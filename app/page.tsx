@@ -480,7 +480,7 @@ export default function Home() {
     drawEyebrow(ctx,rbx, 1,browBaseY,st.browW,st.browAngle,st.browT,st.browDens,st.browShape,st.browColor);
 
     for (const sv of [-1,1] as const) {
-      const ex = cx + sv * 40 + sv * st.eyeDist; ew=13.5*st.eyeW, eh=5.8*st.eyeH;
+      const ex = cx + sv * 40 + sv * st.eyeDist, ew=13.5*st.eyeW, eh=5.8*st.eyeH;
       const innerY=sv===-1?-st.headAng:-st.tailAng;
       const outerY=sv===-1?-st.tailAng:-st.headAng;
 
