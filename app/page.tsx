@@ -468,6 +468,12 @@ export default function Home() {
         const esy = eyeY_abs + st.eyeShadowY;
 
         ctx.save();
+        ctx.beginPath();
+        ctx.rect(esx - ew * 1.5, esy - eh * 3, ew * 3, eh * 3); // 目の上半分を囲う箱
+        ctx.clip(); 
+
+        ctx.strokeStyle = rga(sColor, shadowAlpha);
+
         // 3. ★ここがポイント：塗りつぶしじゃなくて「線（stroke）」にする
         ctx.strokeStyle = rga(sColor, shadowAlpha);
         ctx.lineWidth = shadowStrokeW;
