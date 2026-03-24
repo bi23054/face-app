@@ -99,7 +99,7 @@ function drawEars(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
 }
 
 function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, style:number, vol:number, mainColor:string) {
-  const sr=fw*vol*1.10, hy=ty-80;
+  const sr=fw*vol*1.10, hy=ty - (30 * st.faceH);
   const hc=hr(mainColor), hcD=drk(hc,38), hcL=lit(hc,14), hcM=drk(hc,18);
   const fillHair=()=>{
     const g=ctx.createLinearGradient(cx-sr*0.7,hy,cx+sr*0.7,hy+80);
@@ -318,7 +318,7 @@ function drawMouth(ctx:CanvasRenderingContext2D, cx:number, my:number, mw:number
   const lC=hr(lipColor), lCL=lit(lC,20), lCD=drk(lC,32), lCM=drk(lC,10);
   const upper=(close=false)=>{
     ctx.moveTo(cx-MW,my+1.8+cY);
-    // ★上唇の山を完全対称に再計算（C1xとC2xの値をcxを基準に一致させた）
+
     ctx.bezierCurveTo(cx-MW*0.54,my-uH*0.22+cY*0.5,cx-MW*0.20,my-uH,cx-MW*0.09,my-uH*1.2);
     ctx.bezierCurveTo(cx,my-uH*0.5,cx+MW*0.09,my-uH*1.2,cx+MW*0.20,my-uH);
     ctx.bezierCurveTo(cx+MW*0.54,my-uH*0.22+cY*0.5,cx+MW,my+1.8+cY,cx+MW,my+1.8+cY);
