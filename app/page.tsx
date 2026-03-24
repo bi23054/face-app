@@ -99,7 +99,7 @@ function drawEars(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
 }
 
 function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, style:number, vol:number, mainColor:string) {
-  const sr=fw*vol*1.10, hy=ty - (30 * st.faceH);
+  const sr=fw*vol*1.10, hy=ty - 30;
   const hc=hr(mainColor), hcD=drk(hc,38), hcL=lit(hc,14), hcM=drk(hc,18);
   const fillHair=()=>{
     const g=ctx.createLinearGradient(cx-sr*0.7,hy,cx+sr*0.7,hy+80);
