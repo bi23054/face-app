@@ -193,23 +193,24 @@ function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number
   if (bangStyle===0) return;
   const sr=fw*vol*1.08;
   const hc=hr(mainColor), hcD=drk(hc,32), hcM=drk(hc,18);
-  const g=ctx.createLinearGradient(cx,ty-20,cx,ty+38);
+  const g=ctx.createLinearGradient(cx,ty-5,cx,ty+38);
   g.addColorStop(0,rga(hcD)); g.addColorStop(0.45,rga(hcM)); g.addColorStop(1,rga(hcD,0.55));
   ctx.fillStyle=g;
   const addStrands=(n:number,x0:number,x1:number)=>{
     ctx.save(); ctx.strokeStyle=rga(hcD,0.18); ctx.lineWidth=1.1; ctx.lineCap="round";
     for (let i=0;i<n;i++) {
       const t=(i+0.5)/n, bx=x0+t*(x1-x0);
-      ctx.beginPath(); ctx.moveTo(bx,ty-10); ctx.bezierCurveTo(bx,ty+5,bx+sr*0.01,ty+18,bx,ty+26); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(bx,ty-2); ctx.bezierCurveTo(bx,ty+5,bx+sr*0.01,ty+18,bx,ty+26); ctx.stroke();
     }
     ctx.restore();
   };
   if (bangStyle===1) {
-    ctx.beginPath(); ctx.moveTo(cx-sr*0.90,ty-7);
-    ctx.bezierCurveTo(cx-sr*0.62,ty+3,cx-sr*0.28,ty+26,cx,ty+26);
-    ctx.bezierCurveTo(cx+sr*0.28,ty+26,cx+sr*0.62,ty+3,cx+sr*0.90,ty-7);
-    ctx.lineTo(cx+sr*0.90,ty-24); ctx.lineTo(cx-sr*0.90,ty-24); ctx.closePath(); ctx.fill(); addStrands(5,cx-sr*0.82,cx+sr*0.82);
-  } else if (bangStyle===2) {
+    ctx.beginPath(); ctx.moveTo(cx-sr*0.90,ty-2); // ここを下げた
+    ctx.bezierCurveTo(cx-sr*0.62,ty+3,cx-sr*0.28,ty+26,cx,ty+26);
+    ctx.bezierCurveTo(cx+sr*0.28,ty+26,cx+sr*0.62,ty+3,cx+sr*0.90,ty-2);
+    ctx.lineTo(cx+sr*0.90,ty-5); ctx.lineTo(cx-sr*0.90,ty-5); // 上のラインも下げた
+    ctx.closePath(); ctx.fill(); addStrands(5,cx-sr*0.82,cx+sr*0.82);
+ } else if (bangStyle===2) {
     ctx.beginPath(); ctx.moveTo(cx-sr*0.88,ty-6);
     ctx.bezierCurveTo(cx-sr*0.55,ty+5,cx-sr*0.12,ty+24,cx+sr*0.18,ty+18);
     ctx.bezierCurveTo(cx+sr*0.50,ty+10,cx+sr*0.82,ty-2,cx+sr*0.90,ty-8);
