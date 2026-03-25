@@ -273,8 +273,9 @@ function drawBangsPath(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:nu
     ctx.bezierCurveTo(cx+sr*0.2, ty+25, cx+sr*0.5, ty+10, cx+sr*0.85, hairTop);
   }
   // 頭の上の方まで大きく囲って、おでこをしっかり隠す
-  ctx.lineTo(cx+sr, hairTop-50);
-  ctx.lineTo(cx-sr, hairTop-50);
+  ctx.lineTo(cx + 150, ty + 400); // 画面の右下の方まで
+  ctx.lineTo(cx - 150, ty + 400); // 画面の左下の方まで
+  ctx.lineTo(cx - 150, hairTop - 100);
   ctx.closePath();
 }
 
