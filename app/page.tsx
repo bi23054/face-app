@@ -476,20 +476,20 @@ export default function Home() {
 
     drawHairBack(ctx,cx,ty,fw,st.hairBack,st.hairVol,st.hairMain, sk);
 
-    if (st.hairBang > 0) {
-      ctx.save();
-      drawBangsPath(ctx, cx, ty, fw, st.hairVol, st.hairBang);
-      ctx.clip(); 
-    }
+    //if (st.hairBang > 0) {
+    //  ctx.save();
+      //drawBangsPath(ctx, cx, ty, fw, st.hairVol, st.hairBang);
+      //ctx.clip(); 
+    //}
 
     const faceMidY=ty+(fH+mH+cH)*0.5;
     const g=ctx.createRadialGradient(cx,faceMidY,4,cx,faceMidY,fw*1.5);
     g.addColorStop(0,sk.hi); g.addColorStop(0.28,sk.base); g.addColorStop(0.70,sk.mid); g.addColorStop(1,sk.dark);
     ctx.fillStyle=g; ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.fill();
 
-    if (st.hairBang > 0) {
-      ctx.restore();
-    }
+    //if (st.hairBang > 0) {
+      //ctx.restore();
+    //}
 
     const cColor=hr(st.cheekColor);
     ctx.save(); ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.clip();
