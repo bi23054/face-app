@@ -105,7 +105,8 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
 
   const skMid = hr(sk.mid); // 顔の肌色（中間）
   const blendG = ctx.createLinearGradient(cx, ty, cx, ty - 10);
-  blendG.addColorStop(0, rga(skMid, 1)); // おでこは完全に肌色
+  blendG.addColorStop(0, rga(skMid, 0.8)); // おでこ側を少し薄い肌色に
+  blendG.addColorStop(0.3, rga(hcD, 0)); // すぐに透明にして、後ろ髪を見せる
   blendG.addColorStop(1, rga(hcD, 1));
 
   const fillHair=()=>{
@@ -422,7 +423,7 @@ const DEFAULT_STATE: FaceState = {
   lashDensI:1.10, lashDensC:1.00, lashDensO:1.00,
   eyeShadowW:1, eyeShadowH:1, eyeShadowX:1, eyeShadowY:1, eyeShadowColor:"#a06040",
   tearBag:1, tearBagSize:3.5, tearBagAlpha:0.3, tearBagColor:"skin", tearBagColorAlpha: 0.5,
-  browY:2.50, browDist:-7, browW:0.80, browAngle:-0.60, browT:2.00, browDens:1.50, browShape:1, browColor:"#1a0f06",
+  browY:2.50, browDist:-7, browW:0.80, browAngle:-0.60, browT:4.00, browDens:4.00, browShape:1, browColor:"#1a0f06",
   noseBr:1.2, noseLen:1.0, noseWide:1.0, alaeSize:1.0,
   mouthW:0.7, upperLipT:1.0, lowerLipT:1.0, mouthVert:15, cornerLift:1.0, lipColor:"#c05858",
   hairBack:1, hairBang:0, hairVol:1.0, hairMain:"#1a0f06",
