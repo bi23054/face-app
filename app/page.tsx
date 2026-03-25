@@ -208,65 +208,56 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
 
 function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, vol:number, bangStyle:number, mainColor:string) {
   if (bangStyle===0) return;
-  const sr=fw*vol*1.08;
+  const sr=fw*vol*1.12; 
   const hc=hr(mainColor), hcD=drk(hc,32), hcM=drk(hc,18);
 
-  const hairTop = ty - 20; 
-
-  const g=ctx.createLinearGradient(cx, hairTop, cx, ty+40);
-  g.addColorStop(0,rga(hcD)); g.addColorStop(0.4,rga(hcM)); g.addColorStop(1,rga(hcD,0.3));
+  // グラデーション（生え際をなじませる）
+  const g=ctx.createLinearGradient(cx, ty-45, cx, ty+45);
+  g.addColorStop(0,rga(hcD)); g.addColorStop(0.4,rga(hcM)); g.addColorStop(1,rga(hcD,0));
   ctx.fillStyle=g;
 
   const addStrands=(n:number,x0:number,x1:number)=>{
-    ctx.save(); ctx.strokeStyle=rga(hcD,0.2); ctx.lineWidth=1.2; ctx.lineCap="round";
+    ctx.save(); ctx.strokeStyle=rga(hcD,0.22); ctx.lineWidth=1.1; ctx.lineCap="round";
     for (let i=0;i<n;i++) {
       const t=(i+0.5)/n, bx=x0+t*(x1-x0);
-      // 毛束も上から生やす
-      ctx.beginPath(); ctx.moveTo(bx, hairTop + 5); 
-      ctx.bezierCurveTo(bx, ty+10, bx+sr*0.02, ty+22, bx, ty+35); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(bx, ty-15); 
+      ctx.bezierCurveTo(bx, ty+8, bx+sr*0.02, ty+18, bx, ty+32); ctx.stroke();
     }
     ctx.restore();
   };
 
-  // 各スタイルの「箱」を、おでこよりずっと上の hairTop まで引き上げる
+  ctx.beginPath();
+  // 1. 【共通の土台】頭の丸みに沿ったドーム型（ここが浮き防止の鍵！）
+  ctx.moveTo(cx - sr * 0.92, ty + 10);
+  ctx.bezierCurveTo(cx - sr * 0.85, ty - 55, cx + sr * 0.85, ty - 55, cx + sr * 0.92, ty + 10);
+
+  // 2. 【各スタイルの形】復活させたよ！
   if (bangStyle===1) { // ぱっつん
-    ctx.beginPath(); ctx.moveTo(cx-sr*0.95, hairTop); 
-    ctx.bezierCurveTo(cx - sr * 0.5, ty - 25, cx + sr * 0.5, ty - 25, cx + sr * 0.95, ty + 10);    ctx.bezierCurveTo(cx+sr*0.3, ty+28, cx+sr*0.6, ty+5, cx+sr*0.95, hairTop);
-    
-    ctx.bezierCurveTo(cx + sr * 0.6, ty + 15, cx + sr * 0.3, ty + 28, cx, ty + 28);
-    ctx.bezierCurveTo(cx - sr * 0.3, ty + 28, cx - sr * 0.6, ty + 15, cx - sr * 0.95, ty + 10);
-    
-    ctx.closePath(); 
-    ctx.fill(); 
-    addStrands(6, cx - sr * 0.85, cx + sr * 0.85);
+    ctx.bezierCurveTo(cx+sr*0.6, ty+12, cx+sr*0.3, ty+28, cx, ty+28);
+    ctx.bezierCurveTo(cx-sr*0.3, ty+28, cx-sr*0.6, ty+12, cx-sr*0.92, ty+10);
   } else if (bangStyle===2) { // 斜め
-    ctx.beginPath(); ctx.moveTo(cx-sr*0.95, hairTop); 
-    ctx.bezierCurveTo(cx-sr*0.5, ty+15, cx-sr*0.1, ty+28, cx+sr*0.2, ty+22);
-    ctx.bezierCurveTo(cx+sr*0.5, ty+15, cx+sr*0.8, ty+5, cx+sr*0.95, hairTop);
-    ctx.lineTo(cx+sr*0.95, hairTop - 5); ctx.lineTo(cx-sr*0.95, hairTop - 5); 
-    ctx.closePath(); ctx.fill(); addStrands(5, cx-sr*0.8, cx+sr*0.8);
+    ctx.bezierCurveTo(cx+sr*0.5, ty+12, cx+sr*0.1, ty+26, cx-sr*0.4, ty+24);
+    ctx.bezierCurveTo(cx-sr*0.7, ty+20, cx-sr*0.92, ty+15, cx-sr*0.92, ty+10);
   } else if (bangStyle===3) { // センター
-    for (const s of [-1,1] as const) {
-      ctx.beginPath(); ctx.moveTo(cx+s*sr*0.95, hairTop);
-      ctx.bezierCurveTo(cx+s*sr*0.6, ty+5, cx+s*sr*0.3, ty+22, cx+s*sr*0.1, ty+18);
-      ctx.bezierCurveTo(cx+s*sr*0.05, ty+10, cx+s*2, ty+5, cx, ty+2);
-      ctx.lineTo(cx, hairTop - 5); ctx.lineTo(cx+s*sr*0.95, hairTop - 5); 
-      ctx.closePath(); ctx.fill(); addStrands(3, cx+s*sr*0.1, cx+s*sr*0.85);
-    }
+    ctx.bezierCurveTo(cx+sr*0.6, ty+12, cx+sr*0.2, ty+20, cx+sr*0.05, ty+12);
+    ctx.bezierCurveTo(cx-sr*0.05, ty+20, cx-sr*0.6, ty+12, cx-sr*0.92, ty+10);
   } else if (bangStyle===4) { // 流し
-    ctx.beginPath(); ctx.moveTo(cx-sr*0.95, hairTop); 
-    ctx.bezierCurveTo(cx-sr*0.6, ty+15, cx-sr*0.1, ty+35, cx+sr*0.15, ty+30);
-    ctx.bezierCurveTo(cx+sr*0.5, ty+25, cx+sr*0.8, ty+10, cx+sr*0.95, hairTop);
-    ctx.lineTo(cx+sr*0.95, hairTop - 5); ctx.lineTo(cx-sr*0.95, hairTop - 5); 
-    ctx.closePath(); ctx.fill(); addStrands(5, cx-sr*0.85, cx+sr*0.85);
-  } else { // その他・シースルー系
-    ctx.save(); ctx.globalAlpha=0.85;
-    ctx.beginPath(); ctx.moveTo(cx-sr*0.85, hairTop); 
-    ctx.bezierCurveTo(cx-sr*0.5, ty+10, cx-sr*0.2, ty+25, cx, ty+25);
-    ctx.bezierCurveTo(cx+sr*0.2, ty+25, cx+sr*0.5, ty+10, cx+sr*0.85, hairTop);
-    ctx.lineTo(cx+sr*0.85, hairTop - 5); ctx.lineTo(cx-sr*0.85, hairTop - 5); 
-    ctx.closePath(); ctx.fill(); ctx.restore(); addStrands(6, cx-sr*0.75, cx+sr*0.75);
+    ctx.bezierCurveTo(cx+sr*0.6, ty+15, cx+sr*0.15, ty+35, cx-sr*0.3, ty+30);
+    ctx.bezierCurveTo(cx-sr*0.7, ty+20, cx-sr*0.92, ty+12, cx-sr*0.92, ty+10);
+  } else if (bangStyle===5) { // シースルー（少し短めに）
+    ctx.bezierCurveTo(cx+sr*0.5, ty+10, cx+sr*0.2, ty+22, cx, ty+22);
+    ctx.bezierCurveTo(cx-sr*0.2, ty+22, cx-sr*0.5, ty+10, cx-sr*0.92, ty+10);
+  } else { // ウィスプ・その他
+    ctx.bezierCurveTo(cx+sr*0.4, ty+8, cx+sr*0.1, ty+18, cx, ty+18);
+    ctx.bezierCurveTo(cx-sr*0.1, ty+18, cx-sr*0.4, ty+8, cx-sr*0.92, ty+10);
   }
+
+  ctx.closePath();
+  ctx.fill();
+  
+  // 毛先を散らす本数もスタイルで調整
+  const sNum = bangStyle === 5 ? 8 : 6;
+  addStrands(sNum, cx-sr*0.85, cx+sr*0.85);
 }
 
 // 前髪の「形」だけを計算する専用の部品（これでおでこを切り抜くよ！）
