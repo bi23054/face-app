@@ -98,7 +98,7 @@ function drawEars(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
   }
 }
 
-function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, style:number, vol:number, mainColor:string) {
+function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, style:number, vol:number, mainColor:string, sk:Skin) {
   const sr=fw*vol*1.10, hy=ty - 25;
   const hc=hr(mainColor), hcD=drk(hc,38), hcL=lit(hc,14), hcM=drk(hc,18);
 
