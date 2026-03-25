@@ -98,8 +98,8 @@ function drawEars(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
   }
 }
 
-function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, style:number, vol:number, mainColor:string, sk:Skin) {
-  const sr=fw*vol*1.10, hy=ty - 25;
+// カッコの中に fH, mH, cH, eraW, chinW を追加して！
+function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, style:number, vol:number, mainColor:string, sk:Skin, fH:number, mH:number, cH:number, eraW:number, chinW:number) {  const sr=fw*vol*1.10, hy=ty - 25;
   const hc=hr(mainColor), hcD=drk(hc,38), hcL=lit(hc,14), hcM=drk(hc,18);
 
   const skMid = hr(sk.mid); // 顔の肌色（中間）
@@ -474,8 +474,7 @@ export default function Home() {
     const ty=210-(fH+mH+cH)/2;
     const midStart=ty+fH, midEnd=midStart+mH;
 
-    drawHairBack(ctx,cx,ty,fw,st.hairBack,st.hairVol,st.hairMain, sk);
-
+    drawHairBack(ctx, cx, ty, fw, st.hairBack, st.hairVol, st.hairMain, sk, fH, mH, cH, eraW, chinW);
     //if (st.hairBang > 0) {
     //  ctx.save();
       //drawBangsPath(ctx, cx, ty, fw, st.hairVol, st.hairBang);
