@@ -218,7 +218,7 @@ function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number
   ctx.fillStyle=g;
 
   const addStrands=(n:number,x0:number,x1:number)=>{
-    ctx.save(); ctx.strokeStyle=rga(hcD,0.22); ctx.lineWidth=1.1; ctx.lineCap="round";
+    ctx.save(); ctx.strokeStyle=rga(hcD,0.65); ctx.lineWidth=1.2; ctx.lineCap="round";
     for (let i=0;i<n;i++) {
       const t=(i+0.5)/n, bx=x0+t*(x1-x0);
       ctx.beginPath(); ctx.moveTo(bx, ty-15); 
@@ -423,10 +423,10 @@ const DEFAULT_STATE: FaceState = {
   lashDensI:1.10, lashDensC:1.00, lashDensO:1.00,
   eyeShadowW:1, eyeShadowH:1, eyeShadowX:1, eyeShadowY:1, eyeShadowColor:"#a06040",
   tearBag:1, tearBagSize:3.5, tearBagAlpha:0.3, tearBagColor:"skin", tearBagColorAlpha: 0.5,
-  browY:2.50, browDist:-7, browW:0.80, browAngle:-0.60, browT:4.00, browDens:4.00, browShape:1, browColor:"#1a0f06",
+  browY:2.50, browDist:-7, browW:0.80, browAngle:-0.60, browT:2.00, browDens:1.50, browShape:1, browColor:"#1a0f06",
   noseBr:1.2, noseLen:1.0, noseWide:1.0, alaeSize:1.0,
   mouthW:0.7, upperLipT:1.0, lowerLipT:1.0, mouthVert:15, cornerLift:1.0, lipColor:"#c05858",
-  hairBack:1, hairBang:0, hairVol:1.0, hairMain:"#1a0f06",
+  hairBack:1, hairBang:1, hairVol:1.0, hairMain:"#1a0f06",
   skinT:0.50, shadow:0.50,
   cheekSize:0.6, cheekX:10, cheekY:10, cheekColor:"#e08870",
 };
@@ -471,21 +471,21 @@ export default function Home() {
     const midStart=ty+fH, midEnd=midStart+mH;
 
     drawHairBack(ctx, cx, ty, fw, st.hairBack, st.hairVol, st.hairMain, sk, fH, mH, cH, eraW, chinW);
-    //if (st.hairBang > 0) {
-    //  ctx.save();
-      //drawBangsPath(ctx, cx, ty, fw, st.hairVol, st.hairBang);
-      //ctx.clip(); 
-    //}
-
-    const faceMidY=ty+(fH+mH+cH)*0.5;
+    drawBangs(ctx, cx, ty, fw, st.hairVol, st.hairBang, st.hairMain);
+    const faceMidY=ty+(fH+mH+cH)*0.5;
     const g=ctx.createRadialGradient(cx,faceMidY,4,cx,faceMidY,fw*1.5);
     g.addColorStop(0,sk.hi); g.addColorStop(0.28,sk.base); g.addColorStop(0.70,sk.mid); g.addColorStop(1,sk.dark);
-    ctx.fillStyle=g; ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.fill();
+    ctx.fillStyle=g;
+    ctx.save();
+    // 前髪の形（drawBangsPath）でおでこの上をカット！
+    drawBangsPath(ctx, cx, ty, fw, st.hairVol, st.hairBang);
+    ctx.clip(); 
 
-    //if (st.hairBang > 0) {
-      //ctx.restore();
-    //}
+    // 顔の輪郭を塗る
+    ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.fill();
+    ctx.restore();
 
+    // チークを描く（今のコードの続き）
     const cColor=hr(st.cheekColor);
     ctx.save(); ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.clip();
     for (const sv of [-1,1] as const) {
@@ -808,8 +808,8 @@ return (
             <Sld label="間隔" v={s.browDist} mn={-15} mx={15} st={1} fn={v=>set("browDist",v)} />
             <Sld label="長さ" v={s.browW} mn={0} mx={1.8} st={0.05} fn={v=>set("browW",v)} />
             <Sld label="角度" v={s.browAngle} mn={-6} mx={6} st={0.3} fn={v=>set("browAngle",v)} />
-            <Sld label="太さ" v={s.browT} mn={0.3} mx={2} st={0.05} fn={v=>set("browT",v)} />
-            <Sld label="濃さ" v={s.browDens} mn={0} mx={1.5} st={0.05} fn={v=>set("browDens",v)} />
+            <Sld label="太さ" v={s.browT} mn={0} mx={4} st={0.05} fn={v=>set("browT",v)} />
+            <Sld label="濃さ" v={s.browDens} mn={0} mx={4} st={0.05} fn={v=>set("browDens",v)} />
             <Tabs label="形" v={s.browShape} opts={["アーチ","並行"]} fn={v=>set("browShape",v)} />
             <ColorSwatch label="色" v={s.browColor} fn={v=>set("browColor",v)} list={BROW_COLORS} />
           </Sec>
