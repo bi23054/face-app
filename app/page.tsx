@@ -114,13 +114,13 @@ function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:num
 
     ctx.save();
     ctx.beginPath();
-    ctx.rect(cx-sr*1.5, ty, sr*3, sr*2); // おでこから下
-    ctx.clip(); // この範囲だけ表示
+    facePath(ctx, cx, ty, fw, 60, 100 * 0.7, 35 + 15, -0.10, 20); // facePathを使う！
+    ctx.clip(); 
 
-    ctx.fillStyle = blendG; // さっき作った肌色→髪色のグラデ
-    ctx.fill(); // これで後ろ髪のてっぺんが生え際にピタッとくっつく
+    ctx.fillStyle = blendG; 
+    ctx.fill(); 
     ctx.restore();
-  };
+  };
 
   const shortHead=()=>{
     ctx.beginPath(); ctx.moveTo(cx,hy-6);
