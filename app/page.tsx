@@ -249,6 +249,35 @@ function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number
   }
 }
 
+// 前髪の「形」だけを計算する専用の部品（これでおでこを切り抜くよ！）
+function drawBangsPath(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, vol:number, bangStyle:number) {
+  const sr=fw*vol*1.08;
+  const hairTop = ty - 25; // 前髪の生え際の高さ
+
+  ctx.beginPath();
+  if (bangStyle===1) { // ぱっつん
+    ctx.moveTo(cx-sr*0.95, hairTop); 
+    ctx.bezierCurveTo(cx-sr*0.6, ty+5, cx-sr*0.3, ty+28, cx, ty+28);
+    ctx.bezierCurveTo(cx+sr*0.3, ty+28, cx+sr*0.6, ty+5, cx+sr*0.95, hairTop);
+  } else if (bangStyle===2) { // 斜め
+    ctx.moveTo(cx-sr*0.95, hairTop); 
+    ctx.bezierCurveTo(cx-sr*0.5, ty+15, cx-sr*0.1, ty+28, cx+sr*0.2, ty+22);
+    ctx.bezierCurveTo(cx+sr*0.5, ty+15, cx+sr*0.8, ty+5, cx+sr*0.95, hairTop);
+  } else if (bangStyle===3) { // センター
+    ctx.moveTo(cx-sr*0.95, hairTop);
+    ctx.bezierCurveTo(cx-sr*0.6, ty+5, cx-sr*0.1, ty+18, cx, ty+10);
+    ctx.bezierCurveTo(cx+sr*0.1, ty+18, cx+sr*0.6, ty+5, cx+sr*0.95, hairTop);
+  } else { // その他
+    ctx.moveTo(cx-sr*0.85, hairTop); 
+    ctx.bezierCurveTo(cx-sr*0.5, ty+10, cx-sr*0.2, ty+25, cx, ty+25);
+    ctx.bezierCurveTo(cx+sr*0.2, ty+25, cx+sr*0.5, ty+10, cx+sr*0.85, hairTop);
+  }
+  // 頭の上の方まで大きく囲って、おでこをしっかり隠す
+  ctx.lineTo(cx+sr, hairTop-50);
+  ctx.lineTo(cx-sr, hairTop-50);
+  ctx.closePath();
+}
+
 function drawEyebrow(ctx:CanvasRenderingContext2D, bx:number, side:number, baseY:number, bW:number, targetAngle:number, bT:number, bDens:number, bShape:number, browColor:string) {
   const hc=hr(browColor), hw=19*bW, archD=bShape===0?bT*2.2:bT*0.2;
   ctx.save(); ctx.translate(bx,baseY); ctx.scale(side,1); ctx.lineCap="round";
@@ -444,7 +473,7 @@ export default function Home() {
     if (st.hairBang > 0) {
       ctx.restore();
     }
-    
+
     const cColor=hr(st.cheekColor);
     ctx.save(); ctx.beginPath(); facePath(ctx,cx,ty,fw,fH,mH,cH,eraW,chinW); ctx.clip();
     for (const sv of [-1,1] as const) {
