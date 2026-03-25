@@ -214,11 +214,11 @@ function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number
 
   // グラデーション（生え際をなじませる）
   const g=ctx.createLinearGradient(cx, ty-45, cx, ty+45);
-  g.addColorStop(0,rga(hcD)); g.addColorStop(0.4,rga(hcM)); g.addColorStop(1,rga(hcD,0));
+  g.addColorStop(0,rga(hcD,1)); g.addColorStop(0.4,rga(hcM,1)); g.addColorStop(1,rga(hcD,0.8));
   ctx.fillStyle=g;
 
   const addStrands=(n:number,x0:number,x1:number)=>{
-    ctx.save(); ctx.strokeStyle=rga(hcD,0.65); ctx.lineWidth=1.2; ctx.lineCap="round";
+    ctx.save(); ctx.strokeStyle=rga(hcD,0.85); ctx.lineWidth=1.2; ctx.lineCap="round";
     for (let i=0;i<n;i++) {
       const t=(i+0.5)/n, bx=x0+t*(x1-x0);
       ctx.beginPath(); ctx.moveTo(bx, ty-15); 
