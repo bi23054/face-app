@@ -36,13 +36,14 @@ function facePath(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
   const midBottomY = ty+fH+mH, by = midBottomY+cH;
   const era = Math.max(-0.5, Math.min(0.4, eraW));
   const foreheadX = fw*0.92, eraX = fw*(0.92+era);
-  ctx.moveTo(cx, ty);
-  ctx.bezierCurveTo(cx-fw*0.5, ty, cx-foreheadX*0.9, ty+fH*0.5, cx-foreheadX, ty+fH);
+  
+  ctx.moveTo(cx, ty - 15); 
+  ctx.bezierCurveTo(cx-fw*0.6, ty-10, cx-foreheadX*0.9, ty+fH*0.5, cx-foreheadX, ty+fH);
   ctx.bezierCurveTo(cx-foreheadX, ty+fH+mH*0.4, cx-eraX, ty+fH+mH*0.6, cx-eraX, midBottomY);
   ctx.bezierCurveTo(cx-eraX, midBottomY+cH*0.5, cx-chinW, by-2, cx, by);
   ctx.bezierCurveTo(cx+chinW, by-2, cx+eraX, midBottomY+cH*0.5, cx+eraX, midBottomY);
   ctx.bezierCurveTo(cx+eraX, ty+fH+mH*0.6, cx+foreheadX, ty+fH+mH*0.4, cx+foreheadX, ty+fH);
-  ctx.bezierCurveTo(cx+foreheadX*0.9, ty+fH*0.5, cx+fw*0.5, ty, cx, ty);
+  ctx.bezierCurveTo(cx+foreheadX*0.9, ty+fH*0.5, cx+fw*0.6, ty-10, cx, ty-15);
   ctx.closePath();
 }
 
@@ -210,8 +211,7 @@ function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number
   const sr=fw*vol*1.08;
   const hc=hr(mainColor), hcD=drk(hc,32), hcM=drk(hc,18);
 
-  // ★生え際のスタート地点を「おでこ(ty)のずっと上(-25)」に設定！
-  const hairTop = ty - 25; 
+  const hairTop = ty - 20; 
 
   const g=ctx.createLinearGradient(cx, hairTop, cx, ty+40);
   g.addColorStop(0,rga(hcD)); g.addColorStop(0.4,rga(hcM)); g.addColorStop(1,rga(hcD,0.3));
@@ -231,10 +231,14 @@ function drawBangs(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number
   // 各スタイルの「箱」を、おでこよりずっと上の hairTop まで引き上げる
   if (bangStyle===1) { // ぱっつん
     ctx.beginPath(); ctx.moveTo(cx-sr*0.95, hairTop); 
-    ctx.bezierCurveTo(cx-sr*0.6, ty+5, cx-sr*0.3, ty+28, cx, ty+28);
-    ctx.bezierCurveTo(cx+sr*0.3, ty+28, cx+sr*0.6, ty+5, cx+sr*0.95, hairTop);
-    ctx.lineTo(cx+sr*0.95, hairTop - 5); ctx.lineTo(cx-sr*0.95, hairTop - 5); 
-    ctx.closePath(); ctx.fill(); addStrands(6, cx-sr*0.85, cx+sr*0.85);
+    ctx.bezierCurveTo(cx - sr * 0.5, ty - 25, cx + sr * 0.5, ty - 25, cx + sr * 0.95, ty + 10);    ctx.bezierCurveTo(cx+sr*0.3, ty+28, cx+sr*0.6, ty+5, cx+sr*0.95, hairTop);
+    
+    ctx.bezierCurveTo(cx + sr * 0.6, ty + 15, cx + sr * 0.3, ty + 28, cx, ty + 28);
+    ctx.bezierCurveTo(cx - sr * 0.3, ty + 28, cx - sr * 0.6, ty + 15, cx - sr * 0.95, ty + 10);
+    
+    ctx.closePath(); 
+    ctx.fill(); 
+    addStrands(6, cx - sr * 0.85, cx + sr * 0.85);
   } else if (bangStyle===2) { // 斜め
     ctx.beginPath(); ctx.moveTo(cx-sr*0.95, hairTop); 
     ctx.bezierCurveTo(cx-sr*0.5, ty+15, cx-sr*0.1, ty+28, cx+sr*0.2, ty+22);
