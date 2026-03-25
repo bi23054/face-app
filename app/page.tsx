@@ -101,11 +101,27 @@ function drawEars(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number,
 function drawHairBack(ctx:CanvasRenderingContext2D, cx:number, ty:number, fw:number, style:number, vol:number, mainColor:string) {
   const sr=fw*vol*1.10, hy=ty - 25;
   const hc=hr(mainColor), hcD=drk(hc,38), hcL=lit(hc,14), hcM=drk(hc,18);
+
+  const skMid = hr(sk.mid); // 顔の肌色（中間）
+  const blendG = ctx.createLinearGradient(cx, ty, cx, ty - 10);
+  blendG.addColorStop(0, rga(skMid, 1)); // おでこは完全に肌色
+  blendG.addColorStop(1, rga(hcD, 1));
+
   const fillHair=()=>{
     const g=ctx.createLinearGradient(cx-sr*0.7,hy,cx+sr*0.7,hy+80);
     g.addColorStop(0,rga(hcD)); g.addColorStop(0.3,rga(hcM)); g.addColorStop(0.55,rga(hcL)); g.addColorStop(0.75,rga(hcM)); g.addColorStop(1,rga(hcD));
     ctx.fillStyle=g; ctx.fill();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(cx-sr*1.5, ty, sr*3, sr*2); // おでこから下
+    ctx.clip(); // この範囲だけ表示
+
+    ctx.fillStyle = blendG; // さっき作った肌色→髪色のグラデ
+    ctx.fill(); // これで後ろ髪のてっぺんが生え際にピタッとくっつく
+    ctx.restore();
   };
+
   const shortHead=()=>{
     ctx.beginPath(); ctx.moveTo(cx,hy-6);
     ctx.bezierCurveTo(cx-sr*0.42,hy-8,cx-sr*0.88,hy+10,cx-sr*0.94,ty+28);
