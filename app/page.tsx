@@ -474,7 +474,7 @@ export default function Home() {
     const ty=210-(fH+mH+cH)/2;
     const midStart=ty+fH, midEnd=midStart+mH;
 
-    drawHairBack(ctx,cx,ty,fw,st.hairBack,st.hairVol,st.hairMain);
+    drawHairBack(ctx,cx,ty,fw,st.hairBack,st.hairVol,st.hairMain, sk);
 
     if (st.hairBang > 0) {
       ctx.save();
